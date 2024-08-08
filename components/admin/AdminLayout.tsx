@@ -43,6 +43,14 @@ const AdminLayout = async ({
             </li>
             <li>
               <Link
+                className={'banners' === activeItem ? 'active' : ''}
+                href="/admin/banners"
+              >
+                Banners
+              </Link>
+            </li>
+            <li>
+              <Link
                 className={'products' === activeItem ? 'active' : ''}
                 href="/admin/products"
               >
