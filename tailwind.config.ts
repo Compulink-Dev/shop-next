@@ -14,7 +14,7 @@ const config: Config = {
           primary: '#0000FF',
           '.toaster-con': {
             'background-color': 'white',
-            color: 'black',
+            color: '#0000FF',
           },
         },
         dark: {
