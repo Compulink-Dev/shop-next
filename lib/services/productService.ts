@@ -22,6 +22,12 @@ const getFeatured = cache(async () => {
   return products as Product[]
 })
 
+const getByCategory = cache(async (category: string) => {
+  await dbConnect()
+  const products = await ProductModel.find({}).distinct('category').lean()
+  return products as Product[]
+})
+
 const getBySlug = cache(async (slug: string) => {
   await dbConnect()
   const product = await ProductModel.findOne({ slug }).lean()

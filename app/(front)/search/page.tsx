@@ -93,6 +93,10 @@ export default async function SearchPage({
     return `/search?${new URLSearchParams(params).toString()}`
   }
   const categories = await productServices.getCategories()
+
+  console.log(categories);
+
+
   const { countProducts, products, pages } = await productServices.getByQuery({
     category,
     q,
@@ -109,9 +113,8 @@ export default async function SearchPage({
           <ul>
             <li>
               <Link
-                className={`link link-hover ${
-                  'all' === category && 'link-primary'
-                }`}
+                className={`link link-hover ${'all' === category && 'link-primary'
+                  }`}
                 href={getFilterUrl({ c: 'all' })}
               >
                 Any
@@ -120,9 +123,8 @@ export default async function SearchPage({
             {categories.map((c: string) => (
               <li key={c}>
                 <Link
-                  className={`link link-hover ${
-                    c === category && 'link-primary'
-                  }`}
+                  className={`link link-hover ${c === category && 'link-primary'
+                    }`}
                   href={getFilterUrl({ c })}
                 >
                   {c}
@@ -136,9 +138,8 @@ export default async function SearchPage({
           <ul>
             <li>
               <Link
-                className={`link link-hover ${
-                  'all' === price && 'link-primary'
-                }`}
+                className={`link link-hover ${'all' === price && 'link-primary'
+                  }`}
                 href={getFilterUrl({ p: 'all' })}
               >
                 Any
@@ -148,9 +149,8 @@ export default async function SearchPage({
               <li key={p.value}>
                 <Link
                   href={getFilterUrl({ p: p.value })}
-                  className={`link link-hover ${
-                    p.value === price && 'link-primary'
-                  }`}
+                  className={`link link-hover ${p.value === price && 'link-primary'
+                    }`}
                 >
                   {p.name}
                 </Link>
@@ -164,9 +164,8 @@ export default async function SearchPage({
             <li>
               <Link
                 href={getFilterUrl({ r: 'all' })}
-                className={`link link-hover ${
-                  'all' === rating && 'link-primary'
-                }`}
+                className={`link link-hover ${'all' === rating && 'link-primary'
+                  }`}
               >
                 Any
               </Link>
@@ -175,9 +174,8 @@ export default async function SearchPage({
               <li key={r}>
                 <Link
                   href={getFilterUrl({ r: `${r}` })}
-                  className={`link link-hover ${
-                    `${r}` === rating && 'link-primary'
-                  }`}
+                  className={`link link-hover ${`${r}` === rating && 'link-primary'
+                    }`}
                 >
                   <Rating caption={' & up'} value={r}></Rating>
                 </Link>
@@ -196,9 +194,9 @@ export default async function SearchPage({
             {rating !== 'all' && ' : Rating ' + rating + ' & up'}
             &nbsp;
             {(q !== 'all' && q !== '') ||
-            category !== 'all' ||
-            rating !== 'all' ||
-            price !== 'all' ? (
+              category !== 'all' ||
+              rating !== 'all' ||
+              price !== 'all' ? (
               <Link className="btn btn-sm btn-ghost" href="/search">
                 Clear
               </Link>
@@ -209,9 +207,8 @@ export default async function SearchPage({
             {sortOrders.map((s) => (
               <Link
                 key={s}
-                className={`mx-2 link link-hover ${
-                  sort == s ? 'link-primary' : ''
-                } `}
+                className={`mx-2 link link-hover ${sort == s ? 'link-primary' : ''
+                  } `}
                 href={getFilterUrl({ s })}
               >
                 {s}
@@ -231,9 +228,8 @@ export default async function SearchPage({
               Array.from(Array(pages).keys()).map((p) => (
                 <Link
                   key={p}
-                  className={`join-item btn ${
-                    Number(page) === p + 1 ? 'btn-active' : ''
-                  } `}
+                  className={`join-item btn ${Number(page) === p + 1 ? 'btn-active' : ''
+                    } `}
                   href={getFilterUrl({ pg: `${p + 1}` })}
                 >
                   {p + 1}
