@@ -4,6 +4,7 @@ import productService from '@/lib/services/productService'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Rating } from '@/components/products/Rating'
+import { ArrowBigLeft } from 'lucide-react'
 
 export async function generateMetadata({
   params,
@@ -31,8 +32,9 @@ export default async function ProductDetails({
   }
   return (
     <>
-      <div className="my-2">
-        <Link href="/">back to products</Link>
+      <div className="my-6 flex items-center">
+        <ArrowBigLeft className='' />
+        <Link href="/">Back to products</Link>
       </div>
       <div className="grid md:grid-cols-4 md:gap-3">
         <div className="md:col-span-2">
