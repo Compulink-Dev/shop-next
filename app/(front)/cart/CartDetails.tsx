@@ -1,6 +1,7 @@
 'use client'
 
 import useCartService from '@/lib/hooks/useCartStore'
+import { Trash } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -8,7 +9,7 @@ import { useEffect, useState } from 'react'
 
 export default function CartDetails() {
   const router = useRouter()
-  const { items, itemsPrice, decrease, increase } = useCartService()
+  const { items, itemsPrice, decrease, increase, remove } = useCartService()
 
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
@@ -93,6 +94,15 @@ export default function CartDetails() {
                     >
                       Proceed to Checkout
                     </button>
+                    {
+                      items.map((item) => (
+                        <button
+                          onClick={() => remove(item)}
+                          className="px-5 py-3 text-white text-sm bg-red-600 flex items-center hover:bg-red-400 rounded-lg w-full mt-4">
+                          <p className="">Remove cart</p>
+                        </button>
+                      ))
+                    }
                   </li>
                 </ul>
               </div>

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import React from 'react'
 import Menu from './Menu'
 import { SearchBox } from './SearchBox'
+import Image from 'next/image'
 
 const Header = () => {
   return (
@@ -25,7 +26,7 @@ const Header = () => {
               </svg>
             </label>
             <Link href="/" className="btn btn-ghost text-lg">
-              Compulink Store
+              <Image src={'/logo.png'} alt='' width={150} height={150} />
             </Link>
           </div>
 

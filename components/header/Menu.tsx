@@ -24,7 +24,7 @@ const Menu = () => {
   const { theme, toggleTheme } = useLayoutService()
 
   const handleClick = () => {
-    ;(document.activeElement as HTMLElement).blur()
+    ; (document.activeElement as HTMLElement).blur()
   }
 
   return (
@@ -46,7 +46,7 @@ const Menu = () => {
 
                 {/* sun icon */}
                 <svg
-                  className="swap-on fill-current w-10 h-10"
+                  className="swap-on fill-current w-8 h-8"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                 >
@@ -68,7 +68,7 @@ const Menu = () => {
             <Link className="btn btn-ghost rounded-btn" href="/cart">
               Cart
               {mounted && items.length != 0 && (
-                <div className="badge badge-secondary">
+                <div className="badge bg-blue-800 text-white">
                   {items.reduce((a, c) => a + c.qty, 0)}{' '}
                 </div>
               )}
@@ -78,7 +78,7 @@ const Menu = () => {
             <>
               <li>
                 <div className="dropdown dropdown-bottom dropdown-end">
-                  <label tabIndex={0} className="btn btn-ghost rounded-btn">
+                  <label tabIndex={0} className="btn btn-ghost rounded-btn capitalize">
                     {session.user.name}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
