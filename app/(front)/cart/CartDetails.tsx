@@ -97,6 +97,7 @@ export default function CartDetails() {
                     {
                       items.map((item) => (
                         <button
+                          key={item.slug}
                           onClick={() => remove(item)}
                           className="px-5 py-3 text-white text-sm bg-red-600 flex items-center hover:bg-red-400 rounded-lg w-full mt-4">
                           <p className="">Remove cart</p>
