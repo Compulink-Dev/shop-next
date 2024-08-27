@@ -7,6 +7,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
+import PayNowCheckout from '@/components/Paynow'
 
 export default function OrderDetails({
   orderId,
@@ -76,6 +77,8 @@ export default function OrderDetails({
     isPaid,
     paidAt,
   } = data
+
+  console.log("Items : ", items);
 
   return (
     <div>
@@ -192,6 +195,14 @@ export default function OrderDetails({
                     </PayPalScriptProvider>
                   </li>
                 )}
+                {!isPaid && paymentMethod === 'PayNow' && (
+                  <li>
+                    <PayNowCheckout
+                      items={items}
+                    />
+                  </li>
+                )}
+
                 {session?.user.isAdmin && (
                   <li>
                     <button

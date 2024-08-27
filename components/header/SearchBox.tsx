@@ -31,7 +31,7 @@ export const SearchBox = () => {
           defaultValue={q}
           name="q"
         />
-        <button className="join-item btn">Search</button>
+        <button className="join-item btn bg-red-500">Search</button>
       </div>
     </form>
   )

@@ -112,7 +112,7 @@ const Form = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item) => (
+                  {items.map((item: any) => (
                     <tr key={item.slug}>
                       <td>
                         <Link
