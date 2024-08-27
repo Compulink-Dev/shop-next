@@ -9,14 +9,14 @@ import { useEffect, useState } from 'react'
 
 export default function CartDetails() {
   const router = useRouter()
-  const { items, itemsPrice, decrease, increase, remove } = useCartService()
+  const { items, itemsPrice, decrease, increase, remove, clear } = useCartService()
 
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted) return <></>
+  if (!mounted) return <div>Loading...</div>
 
   return (
     <>
@@ -35,22 +35,20 @@ export default function CartDetails() {
                   <th>Item</th>
                   <th>Quantity</th>
                   <th>Price</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => (
                   <tr key={item.slug}>
                     <td>
-                      <Link
-                        href={`/product/${item.slug}`}
-                        className="flex items-center"
-                      >
+                      <Link href={`/product/${item.slug}`} className="flex items-center">
                         <Image
                           src={item.image}
                           alt={item.name}
                           width={50}
                           height={50}
-                        ></Image>
+                        />
                         <span className="px-2">{item.name}</span>
                       </Link>
                     </td>
@@ -72,6 +70,15 @@ export default function CartDetails() {
                       </button>
                     </td>
                     <td>${item.price}</td>
+                    <td>
+                      <button
+                        onClick={() => remove(item)}
+                        className="px-5 py-2 text-white bg-red-600 hover:bg-red-400 rounded-lg"
+                        aria-label={`Remove ${item.name} from cart`}
+                      >
+                        <Trash />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -83,8 +90,7 @@ export default function CartDetails() {
                 <ul>
                   <li>
                     <div className="pb-3 text-xl">
-                      Subtotal ({items.reduce((a, c) => a + c.qty, 0)}) : $
-                      {itemsPrice}
+                      Subtotal ({items.reduce((a, c) => a + c.qty, 0)}) : ${itemsPrice}
                     </div>
                   </li>
                   <li>
@@ -94,16 +100,14 @@ export default function CartDetails() {
                     >
                       Proceed to Checkout
                     </button>
-                    {
-                      items.map((item) => (
-                        <button
-                          key={item.slug}
-                          onClick={() => remove(item)}
-                          className="px-5 py-3 text-white text-sm bg-red-600 flex items-center hover:bg-red-400 rounded-lg w-full mt-4">
-                          <p className="">Remove cart</p>
-                        </button>
-                      ))
-                    }
+                  </li>
+                  <li className=''>
+                    <button
+                      className=' mt-3 w-full px-4 py-3 text-white bg-red-600 hover:bg-red-400 rounded-lg'
+                      onClick={() => clear()}
+                    >
+                      Remove Cart
+                    </button>
                   </li>
                 </ul>
               </div>

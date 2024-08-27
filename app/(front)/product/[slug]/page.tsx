@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Rating } from '@/components/products/Rating'
 import { ArrowBigLeft } from 'lucide-react'
+import ProductPage from '../ProductPage'
 
 export async function generateMetadata({
   params,
