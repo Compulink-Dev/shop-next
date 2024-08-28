@@ -20,6 +20,7 @@
     "mongoose": "^8.0.3",
     "next": "14.2.4",
     "next-auth": "5.0.0-beta.4",
+    "paynow": "^1.2.0",
     "paynow-react": "^1.0.0",
     "react": "^18",
     "react-chartjs-2": "^5.2.0",

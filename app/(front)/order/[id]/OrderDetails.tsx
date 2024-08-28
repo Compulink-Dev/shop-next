@@ -8,6 +8,7 @@ import toast from 'react-hot-toast'
 import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
 import PayNowCheckout from '@/components/Paynow'
+import { useState } from 'react';
 
 export default function OrderDetails({
   orderId,
@@ -16,6 +17,31 @@ export default function OrderDetails({
   orderId: string
   paypalClientId: string
 }) {
+
+  const [loading, setLoading] = useState(false);
+
+  const handlePayment = async () => {
+    setLoading(true);
+
+    try {
+      // Call the API route to create payment
+      const response = await fetch('/api/paynow');
+      const data = await response.json();
+
+      if (response.ok) {
+        // Redirect the user to Paynow
+        window.location.href = data.redirectUrl;
+      } else {
+        console.error('Error creating payment:', data.error);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const { trigger: deliverOrder, isMutating: isDelivering } = useSWRMutation(
     `/api/orders/${orderId}`,
     async (url) => {
@@ -197,9 +223,9 @@ export default function OrderDetails({
                 )}
                 {!isPaid && paymentMethod === 'PayNow' && (
                   <li>
-                    <PayNowCheckout
-                      items={items}
-                    />
+                    <button onClick={handlePayment} disabled={loading}>
+                      {loading ? 'Processing...' : <img src={'https://www.paynow.co.zw/Content/buttons/medium_buttons/button_add-to-cart_medium.png'} width={150} height={150} alt='' />}
+                    </button>
                   </li>
                 )}
 
