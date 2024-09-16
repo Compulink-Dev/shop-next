@@ -104,7 +104,7 @@ export default function OrderDetails({
     paidAt,
   } = data
 
-  console.log("Items : ", items);
+  console.log("Items : ", deliveredAt);
 
   return (
     <div>

@@ -104,7 +104,9 @@ const Menu = () => {
                         <Link href="/admin/dashboard">Admin Dashboard</Link>
                       </li>
                     )}
-
+                    <li onClick={handleClick}>
+                      <Link href="/order-tracking">Order tracking </Link>
+                    </li>
                     <li onClick={handleClick}>
                       <Link href="/order-history">Order history </Link>
                     </li>

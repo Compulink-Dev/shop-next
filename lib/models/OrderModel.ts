@@ -38,6 +38,7 @@ const orderSchema = new mongoose.Schema(
     isDelivered: { type: Boolean, required: true, default: false },
     paidAt: { type: Date },
     deliveredAt: { type: Date },
+    estimatedDeliveryAt: { type: Date }
   },
   {
     timestamps: true,
@@ -69,6 +70,7 @@ export type Order = {
   paidAt?: string
   deliveredAt?: string
   createdAt: string
+  estimatedDeliveryAt: string
 }
 
 export type OrderItem = {
