@@ -1,13 +1,7 @@
 import React from 'react'
 import Tracking from './Tracking'
 
-function OrderTracking({
-    orderId,
-    paypalClientId,
-}: {
-    orderId: string
-    paypalClientId: string
-}) {
+function OrderTracking() {
 
     return (
         <div className='text-2xl py-2'>
