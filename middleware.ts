@@ -1,31 +1,43 @@
 import NextAuth from 'next-auth'
 import type { NextAuthConfig } from 'next-auth'
 
+// Define the protected paths as regex patterns
+const protectedPaths = [
+  /^\/shipping/,
+  /^\/payment/,
+  /^\/place-order/,
+  /^\/profile/,
+  /^\/order\/.+$/, // Matches paths like /order/<id>
+  /^\/admin/,
+]
+
+// Define the NextAuth configuration
 const authConfig = {
   providers: [],
   callbacks: {
     authorized({ request, auth }: any) {
-      const protectedPaths = [
-        /\/shipping/,
-        /\/payment/,
-        /\/place-order/,
-        /\/profile/,
-        /\/order\/(.*)/,
-        /\/admin/,
-      ]
       const { pathname } = request.nextUrl
-      if (protectedPaths.some((p) => p.test(pathname))) return !!auth
+
+      // Check if the current pathname matches any of the protected paths
+      if (protectedPaths.some((pattern) => pattern.test(pathname))) {
+        // Allow access only if the user is authenticated
+        return !!auth
+      }
+
+      // Allow access to other paths
       return true
     },
   },
 } satisfies NextAuthConfig
 
+// Export the middleware
 export const { auth: middleware } = NextAuth(authConfig)
 
+// Export middleware configuration
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths except for:
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)

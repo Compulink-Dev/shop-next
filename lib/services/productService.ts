@@ -1,40 +1,41 @@
-import { cache } from 'react'
-import dbConnect from '@/lib/dbConnect'
-import ProductModel, { Product } from '@/lib/models/ProductModel'
+import { cache } from 'react';
+import dbConnect from '@/lib/dbConnect';
+import ProductModel, { Product } from '@/lib/models/ProductModel';
 
-export const revalidate = 3600
+export const revalidate = 3600;
 
 const getLatest = cache(async () => {
-  await dbConnect()
-  const products = await ProductModel.find({}).sort({ _id: -1 }).limit(6).lean()
-  return products as Product[]
-})
+  await dbConnect();
+  const products = await ProductModel.find({}).sort({ _id: -1 }).limit(6).lean();
+  return products as Product[];
+});
 
 const getAll = cache(async () => {
-  await dbConnect()
-  const products = await ProductModel.find({}).lean()
-  return products as Product[]
-})
+  await dbConnect();
+  const products = await ProductModel.find({}).lean();
+  return products as Product[];
+});
 
 const getFeatured = cache(async () => {
-  await dbConnect()
-  const products = await ProductModel.find({ isFeatured: true }).limit(3).lean()
-  return products as Product[]
-})
+  await dbConnect();
+  const products = await ProductModel.find({ isFeatured: true }).limit(3).lean();
+  return products as Product[];
+});
 
-const getByCategory = cache(async (category: string) => {
-  await dbConnect()
-  const products = await ProductModel.find({}).distinct('category').lean()
-  return products as Product[]
-})
+const getProductsByCategory = cache(async (category: string) => {
+  await dbConnect();
+  const products = await ProductModel.find({ category }).lean();
+  return products as Product[];
+});
 
 const getBySlug = cache(async (slug: string) => {
-  await dbConnect()
-  const product = await ProductModel.findOne({ slug }).lean()
-  return product as Product
-})
+  await dbConnect();
+  const product = await ProductModel.findOne({ slug }).lean();
+  return product as Product;
+});
 
-const PAGE_SIZE = 3
+const PAGE_SIZE = 3;
+
 const getByQuery = cache(
   async ({
     q,
@@ -44,14 +45,14 @@ const getByQuery = cache(
     rating,
     page = '1',
   }: {
-    q: string
-    category: string
-    price: string
-    rating: string
-    sort: string
-    page: string
+    q: string;
+    category: string;
+    price: string;
+    rating: string;
+    sort: string;
+    page: string;
   }) => {
-    await dbConnect()
+    await dbConnect();
 
     const queryFilter =
       q && q !== 'all'
@@ -61,8 +62,8 @@ const getByQuery = cache(
             $options: 'i',
           },
         }
-        : {}
-    const categoryFilter = category && category !== 'all' ? { category } : {}
+        : {};
+    const categoryFilter = category && category !== 'all' ? { category } : {};
     const ratingFilter =
       rating && rating !== 'all'
         ? {
@@ -70,8 +71,7 @@ const getByQuery = cache(
             $gte: Number(rating),
           },
         }
-        : {}
-    // 10-50
+        : {};
     const priceFilter =
       price && price !== 'all'
         ? {
@@ -80,7 +80,7 @@ const getByQuery = cache(
             $lte: Number(price.split('-')[1]),
           },
         }
-        : {}
+        : {};
     const order: Record<string, 1 | -1> =
       sort === 'lowest'
         ? { price: 1 }
@@ -88,9 +88,8 @@ const getByQuery = cache(
           ? { price: -1 }
           : sort === 'toprated'
             ? { rating: -1 }
-            : { _id: -1 }
+            : { _id: -1 };
 
-    const categories = await ProductModel.find().distinct('category')
     const products = await ProductModel.find(
       {
         ...queryFilter,
@@ -103,30 +102,29 @@ const getByQuery = cache(
       .sort(order)
       .skip(PAGE_SIZE * (Number(page) - 1))
       .limit(PAGE_SIZE)
-      .lean()
+      .lean();
 
     const countProducts = await ProductModel.countDocuments({
       ...queryFilter,
       ...categoryFilter,
       ...priceFilter,
       ...ratingFilter,
-    })
+    });
 
     return {
       products: products as Product[],
       countProducts,
       page,
       pages: Math.ceil(countProducts / PAGE_SIZE),
-      categories,
-    }
+    };
   }
-)
+);
 
 const getCategories = cache(async () => {
-  await dbConnect()
-  const categories = await ProductModel.find().distinct('category')
-  return categories
-})
+  await dbConnect();
+  const categories = await ProductModel.find().distinct('category');
+  return categories;
+});
 
 const productService = {
   getLatest,
@@ -135,5 +133,7 @@ const productService = {
   getByQuery,
   getCategories,
   getAll,
-}
-export default productService
+  getProductsByCategory,
+};
+
+export default productService;

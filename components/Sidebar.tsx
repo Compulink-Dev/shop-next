@@ -17,7 +17,7 @@ const Sidebar = () => {
         <h2 className="text-xl">Shop By Department</h2>
       </li>
       {categories.map((category: string) => (
-        <li key={category}>
+        <li key={category} className='mb-2'>
           <Link href={`/search?category=${category}`} onClick={toggleDrawer}>
             {category}
           </Link>

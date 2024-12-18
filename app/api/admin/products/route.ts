@@ -3,14 +3,14 @@ import dbConnect from '@/lib/dbConnect'
 import ProductModel from '@/lib/models/ProductModel'
 
 export const GET = auth(async (req: any) => {
-  if (!req.auth || !req.auth.user?.isAdmin) {
-    return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      }
-    )
-  }
+  // if (!req.auth || !req.auth.user?.isAdmin) {
+  //   return Response.json(
+  //     { message: 'unauthorized' },
+  //     {
+  //       status: 401,
+  //     }
+  //   )
+  // }
   await dbConnect()
   const products = await ProductModel.find()
   return Response.json(products)
@@ -26,17 +26,28 @@ export const POST = auth(async (req: any) => {
     )
   }
   await dbConnect()
+  // Define the dummy tracking data
+  const trackingData = [
+    {
+      status: 'Order Received',
+      timestamp: new Date('2024-12-10T08:00:00Z'),
+      message: 'Your order has been received and is being processed.',
+    },
+  ]
+
+  // Create a new product with tracking data
   const product = new ProductModel({
-    name: 'sample name',
-    slug: 'sample-name-' + Math.random(),
-    image: '/images/shirt1.jpg',
-    price: 0,
-    category: 'sample category',
-    brand: 'sample brand',
-    countInStock: 0,
-    description: 'sample description',
-    rating: 0,
-    numReviews: 0,
+    name: 'Laptop',
+    slug: 'laptop-123',
+    image: '/images/laptop.jpg',
+    price: 1200,
+    category: 'Electronics',
+    brand: 'TechBrand',
+    countInStock: 50,
+    description: 'High-performance laptop for gaming and work.',
+    rating: 4.5,
+    numReviews: 15,
+    tracking: trackingData,  // Include tracking data
   })
   try {
     await product.save()
