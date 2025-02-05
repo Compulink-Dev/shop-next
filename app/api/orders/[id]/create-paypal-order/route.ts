@@ -11,9 +11,6 @@ export async function POST(
 ) {
   const session = await getServerSession(options);
 
-  if (!session || !session.user?.isAdmin) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
   await dbConnect();
 
   const order = await OrderModel.findById(params.id);

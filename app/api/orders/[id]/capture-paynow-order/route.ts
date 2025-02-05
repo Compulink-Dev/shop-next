@@ -17,11 +17,6 @@ type Context = {
 export async function POST(req: Request, context: Context) {
   const session = await getServerSession(options);
 
-  if (!session || !session.user?.isAdmin) {
-    console.log("Unauthorized access attempt");
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
   try {
     // Connect to the database
     await dbConnect();

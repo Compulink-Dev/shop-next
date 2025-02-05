@@ -22,11 +22,7 @@ const calcPrices = (orderItems: OrderItem[]) => {
 
 export async function POST(req: any) {
   const session = await getServerSession(options);
-
-  if (!session || !session.user?.isAdmin) {
-    console.log("Unauthorized access attempt");
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  console.log("Session", session);
 
   try {
     const payload = await req.json();
@@ -55,7 +51,7 @@ export async function POST(req: any) {
       totalPrice,
       shippingAddress: payload.shippingAddress,
       paymentMethod: payload.paymentMethod,
-      user: session.user._id,
+      user: session?.user._id,
     });
 
     const createdOrder = await newOrder.save();
