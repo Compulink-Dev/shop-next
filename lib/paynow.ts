@@ -8,8 +8,8 @@ export const paynow = {
     amount: number
   ) {
     const paynow = new Paynow(
-      process.env.NEXT_PUBLIC_PAYNOW_ID,
-      process.env.NEXT_PUBLIC_PAYNOW_KEY
+      process.env.INTEGRATION_ID,
+      process.env.INTEGRATION_KEY
     );
 
     // Set PayNow URLs for redirection and results
