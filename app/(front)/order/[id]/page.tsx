@@ -1,17 +1,27 @@
-import OrderTracking from '@/components/OrderTracking'
-import OrderDetails from './OrderDetails'
+'use client';
 
-export function generateMetadata({ params }: { params: { id: string } }) {
-  return {
-    title: `Order ${params.id}`,
-  }
-}
+import { useEffect, useState } from 'react';
+import { getSession } from 'next-auth/react';
+import OrderTracking from '@/components/OrderTracking';
+import OrderDetails from './OrderDetails';
 
 export default function OrderDetailsPage({
   params,
 }: {
-  params: { id: string }
+  params: { id: string };
 }) {
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const sessionData = await getSession();
+      //@ts-ignore
+      setSession(sessionData);
+    };
+
+    fetchSession();
+  }, []);
+
   return (
     <div className="">
       <OrderDetails
@@ -19,8 +29,8 @@ export default function OrderDetailsPage({
         orderId={params.id}
       />
       <div className="my-8">
-        <OrderTracking orderId={params.id} />
+        <OrderTracking orderId={params.id} session={session} />
       </div>
     </div>
-  )
+  );
 }

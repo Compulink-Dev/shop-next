@@ -52,7 +52,7 @@ export default function CartDetails() {
                         <span className="px-2">{item.name}</span>
                       </Link>
                     </td>
-                    <td>
+                    <td className='flex flex-col md:flex-row items-center'>
                       <button
                         className="btn"
                         type="button"

@@ -1,40 +1,41 @@
-import { auth } from '@/lib/auth'
-import dbConnect from '@/lib/dbConnect'
-import OrderModel from '@/lib/models/OrderModel'
+import { options } from "@/app/api/auth/[...nextauth]/options";
+import dbConnect from "@/lib/dbConnect";
+import OrderModel from "@/lib/models/OrderModel";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 
-export const PUT = auth(async (...args: any) => {
-  const [req, { params }] = args
-  if (!req.auth || !req.auth.user?.isAdmin) {
-    return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      }
-    )
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(options);
+
+  if (!session || !session.user?.isAdmin) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
   try {
-    await dbConnect()
+    await dbConnect();
 
-    const order = await OrderModel.findById(params.id)
+    const order = await OrderModel.findById(params.id);
     if (order) {
       if (!order.isPaid)
         return Response.json(
-          { message: 'Order is not paid' },
+          { message: "Order is not paid" },
           {
             status: 400,
           }
-        )
-      order.isDelivered = true
-      order.deliveredAt = Date.now()
-      const updatedOrder = await order.save()
-      return Response.json(updatedOrder)
+        );
+      order.isDelivered = true;
+      order.deliveredAt = Date.now();
+      const updatedOrder = await order.save();
+      return Response.json(updatedOrder);
     } else {
       return Response.json(
-        { message: 'Order not found' },
+        { message: "Order not found" },
         {
           status: 404,
         }
-      )
+      );
     }
   } catch (err: any) {
     return Response.json(
@@ -42,6 +43,6 @@ export const PUT = auth(async (...args: any) => {
       {
         status: 500,
       }
-    )
+    );
   }
-}) as any
+}

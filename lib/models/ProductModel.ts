@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 // Define the schema for MongoDB
 const productSchema = new mongoose.Schema(
   {
+    part: { type: String, required: true },
     name: { type: String, required: true },
     slug: { type: String, required: true, unique: true },
     category: { type: String, required: true },
@@ -37,9 +38,10 @@ export default ProductModel;
 // Updated Product type
 export type Product = {
   _id: string;  // Ensure _id is always treated as a string
+  part: string;
   name: string;
   slug: string;
-  image: string;
+  image?: string;
   banner?: string; // Optional banner field
   price: number;
   brand: string;

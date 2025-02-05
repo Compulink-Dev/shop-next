@@ -1,17 +1,16 @@
-import { SessionProvider } from 'next-auth/react'
-import { auth } from '@/lib/auth'
-import ClientProviders from './ClientProviders'
+"use client";
 
-export default async function Providers({
+import { ReactNode } from "react";
+import { SessionProvider } from "next-auth/react";
+import { Session } from "next-auth";
+interface SessionProviderWrapperProps {
+  children: ReactNode;
+  session: Session | null;
+}
+
+export default function SessionProviderWrapper({
   children,
-}: {
-  children: React.ReactNode
-}) {
-  const session = await auth()
-
-  return (
-    <SessionProvider session={session}>
-      <ClientProviders>{children}</ClientProviders>
-    </SessionProvider>
-  )
+  session,
+}: SessionProviderWrapperProps) {
+  return <SessionProvider session={session}> {children} </SessionProvider>;
 }

@@ -1,8 +1,8 @@
-import { Product } from '@/lib/models/ProductModel'
-import Image from 'next/image'
-import Link from 'next/link'
-import React from 'react'
-import { Rating } from './Rating'
+import { Product } from "@/lib/models/ProductModel";
+import Image from "next/image";
+import Link from "next/link";
+import React from "react";
+import { Rating } from "./Rating";
 
 export default function ProductItem({ product }: { product: Product }) {
   return (
@@ -10,7 +10,7 @@ export default function ProductItem({ product }: { product: Product }) {
       <figure>
         <Link href={`/product/${product.slug}`}>
           <Image
-            src={product.image}
+            src={`${product.image}`}
             alt={product.name}
             width={200}
             height={80}
@@ -29,5 +29,5 @@ export default function ProductItem({ product }: { product: Product }) {
         </div>
       </div>
     </div>
-  )
+  );
 }

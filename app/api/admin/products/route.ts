@@ -1,68 +1,95 @@
-import { auth } from '@/lib/auth'
-import dbConnect from '@/lib/dbConnect'
-import ProductModel from '@/lib/models/ProductModel'
+import { getServerSession } from "next-auth";
+import dbConnect from "@/lib/dbConnect";
+import OrderModel, { OrderItem } from "@/lib/models/OrderModel";
+import ProductModel from "@/lib/models/ProductModel";
+import { round2 } from "@/lib/utils";
+import { NextResponse } from "next/server";
+import { options } from "../../auth/[...nextauth]/options";
 
-export const GET = auth(async (req: any) => {
-  // if (!req.auth || !req.auth.user?.isAdmin) {
-  //   return Response.json(
-  //     { message: 'unauthorized' },
-  //     {
-  //       status: 401,
-  //     }
-  //   )
-  // }
-  await dbConnect()
-  const products = await ProductModel.find()
-  return Response.json(products)
-}) as any
+const calcPrices = (orderItems: OrderItem[]) => {
+  const itemsPrice = round2(
+    orderItems.reduce((acc, item) => acc + item.price * item.qty, 0)
+  );
+  const shippingPrice = round2(itemsPrice > 100 ? 0 : 10);
+  const taxPrice = round2(Number((0.15 * itemsPrice).toFixed(2)));
+  const totalPrice = round2(itemsPrice + shippingPrice + taxPrice);
 
-export const POST = auth(async (req: any) => {
-  if (!req.auth || !req.auth.user?.isAdmin) {
-    return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      }
-    )
+  return { itemsPrice, shippingPrice, taxPrice, totalPrice };
+};
+
+export async function POST(req: Request) {
+  const session = await getServerSession(options);
+
+  if (!session || !session.user) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  await dbConnect()
-  // Define the dummy tracking data
-  const trackingData = [
-    {
-      status: 'Order Received',
-      timestamp: new Date('2024-12-10T08:00:00Z'),
-      message: 'Your order has been received and is being processed.',
-    },
-  ]
 
-  // Create a new product with tracking data
-  const product = new ProductModel({
-    name: 'Laptop',
-    slug: 'laptop-123',
-    image: '/images/laptop.jpg',
-    price: 1200,
-    category: 'Electronics',
-    brand: 'TechBrand',
-    countInStock: 50,
-    description: 'High-performance laptop for gaming and work.',
-    rating: 4.5,
-    numReviews: 15,
-    tracking: trackingData,  // Include tracking data
-  })
   try {
-    await product.save()
-    return Response.json(
-      { message: 'Product created successfully', product },
+    const payload = await req.json();
+    await dbConnect();
+
+    const dbProductPrices = await ProductModel.find(
       {
-        status: 201,
-      }
-    )
+        _id: { $in: payload.items.map((x: { _id: string }) => x._id) },
+      },
+      "price"
+    );
+
+    const dbOrderItems = payload.items.map((x: { _id: string }) => ({
+      ...x,
+      product: x._id,
+      price:
+        dbProductPrices.find((p) => p._id.toString() === x._id)?.price || 0,
+      _id: undefined,
+    }));
+
+    const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
+      calcPrices(dbOrderItems);
+
+    const newOrder = new OrderModel({
+      items: dbOrderItems,
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      shippingAddress: payload.shippingAddress,
+      paymentMethod: payload.paymentMethod,
+      user: session.user._id,
+    });
+
+    const createdOrder = await newOrder.save();
+    return NextResponse.json(
+      { message: "Order has been created", order: createdOrder },
+      { status: 201 }
+    );
   } catch (err: any) {
-    return Response.json(
-      { message: err.message },
-      {
-        status: 500,
-      }
-    )
+    return NextResponse.json({ message: err.message }, { status: 500 });
   }
-}) as any
+}
+
+export async function GET() {
+  const session = await getServerSession(options);
+
+  if (!session || !session.user?.isAdmin) {
+    console.log("Unauthorized access attempt");
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await dbConnect();
+    const product = await ProductModel.find();
+    if (!product) {
+      return NextResponse.json(
+        { message: "Product not found" },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(product);
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch product." },
+      { status: 500 }
+    );
+  }
+}

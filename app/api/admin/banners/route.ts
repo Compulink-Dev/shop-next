@@ -1,51 +1,63 @@
-import { auth } from '@/lib/auth'
-import dbConnect from '@/lib/dbConnect'
-import BannerModel from '@/lib/models/BannerModel'
+import dbConnect from "@/lib/dbConnect";
+import BannerModel from "@/lib/models/BannerModel";
+import { getServerSession } from "next-auth";
+import { options } from "../../auth/[...nextauth]/options";
+import { NextResponse } from "next/server";
 
+export async function GET() {
+  const session = await getServerSession(options);
 
-export const GET = auth(async (req: any) => {
-  if (!req.auth || !req.auth.user?.isAdmin) {
-    return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      }
-    )
+  if (!session || !session.user?.isAdmin) {
+    console.log("Unauthorized access attempt");
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  await dbConnect()
-  const products = await BannerModel.find()
-  return Response.json(products)
-}) as any
 
-export const POST = auth(async (req: any) => {
-  if (!req.auth || !req.auth.user?.isAdmin) {
-    return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      }
-    )
-  }
-  await dbConnect()
-  const product = new BannerModel({
-    name: 'sample name',
-    slug: 'sample-name-' + Math.random(),
-    image: '/images/shirt1.jpg',
-  })
   try {
-    await product.save()
+    await dbConnect();
+    const products = await BannerModel.find();
+    if (!products) {
+      return NextResponse.json(
+        { message: "Product not found" },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(products);
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch product." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST() {
+  const session = await getServerSession(options);
+
+  if (!session || !session.user?.isAdmin) {
+    console.log("Unauthorized access attempt");
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  await dbConnect();
+  const product = new BannerModel({
+    name: "sample name",
+    slug: "sample-name-" + Math.random(),
+    image: "/images/shirt1.jpg",
+  });
+  try {
+    await product.save();
     return Response.json(
-      { message: 'Product created successfully', product },
+      { message: "Product created successfully", product },
       {
         status: 201,
       }
-    )
+    );
   } catch (err: any) {
     return Response.json(
       { message: err.message },
       {
         status: 500,
       }
-    )
+    );
   }
-}) as any
+}

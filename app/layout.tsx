@@ -1,25 +1,32 @@
-import './globals.css'
-import type { Metadata } from 'next'
-import Providers from '@/components/Providers'
-import DrawerButton from '@/components/DrawerButton'
-import Sidebar from '@/components/Sidebar'
-import Header from '@/components/header/Header'
-
+import "./globals.css";
+import type { Metadata } from "next";
+import Providers from "@/components/Providers";
+import DrawerButton from "@/components/DrawerButton";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/header/Header";
+import { getServerSession, Session } from "next-auth";
+import { options } from "./api/auth/[...nextauth]/options";
 
 export const metadata: Metadata = {
-  title: 'Next-Shop',
-  description: 'Next Shop',
+  title: "Compulink Shop",
+  description: "Compulink Shop",
+};
+
+interface RootLayoutProps {
+  children: React.ReactNode; // Type for children elements
+  params: {
+    session?: Session | null; // Optional session prop
+    [key: string]: any; // Allow other params
+  };
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const session = await getServerSession(options);
+
   return (
     <html lang="en">
-      <body>
-        <Providers>
+      <body className="bg-base-100 text-white">
+        <Providers session={session}>
           <div className="drawer">
             <DrawerButton />
             <div className="drawer-content">
@@ -27,9 +34,7 @@ export default function RootLayout({
                 <Header />
                 {children}
                 <footer className="footer footer-center p-4 bg-base-300 text-base-content">
-                  <p>
-                    Copyright © 2024 - All right reserved by Compulink
-                  </p>
+                  <p>Copyright © 2025 - All right reserved by Compulink</p>
                 </footer>
               </div>
             </div>
@@ -45,5 +50,5 @@ export default function RootLayout({
         </Providers>
       </body>
     </html>
-  )
+  );
 }

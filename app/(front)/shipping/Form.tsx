@@ -1,7 +1,7 @@
 'use client'
 import CheckoutSteps from '@/components/CheckoutSteps'
 import useCartService from '@/lib/hooks/useCartStore'
-import { ShippingAddress } from '@/lib/models/OrderModel'
+import { ShippingAddress } from '@/lib/models/OrderModel';
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { SubmitHandler, ValidationRule, useForm } from 'react-hook-form'
@@ -43,10 +43,10 @@ const Form = () => {
     required,
     pattern,
   }: {
-    id: keyof ShippingAddress
-    name: string
-    required?: boolean
-    pattern?: ValidationRule<RegExp>
+    id: Extract<keyof ShippingAddress, string>; // Ensure 'id' is only a string
+    name: string;
+    required?: boolean;
+    pattern?: ValidationRule<RegExp>;
   }) => (
     <div className="mb-2">
       <label className="label" htmlFor={id}>
@@ -54,7 +54,7 @@ const Form = () => {
       </label>
       <input
         type="text"
-        id={id}
+        id={id} // 'id' is now guaranteed to be a string
         {...register(id, {
           required: required && `${name} is required`,
           pattern,
@@ -65,7 +65,8 @@ const Form = () => {
         <div className="text-error">{errors[id]?.message}</div>
       )}
     </div>
-  )
+  );
+
 
   return (
     <div>

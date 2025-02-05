@@ -1,19 +1,18 @@
-import dbConnect from '@/lib/dbConnect'
-import OrderModel from '@/lib/models/OrderModel'
-import { auth } from '@/lib/auth'
-import { NextResponse } from 'next/server'
+import dbConnect from "@/lib/dbConnect";
+import OrderModel from "@/lib/models/OrderModel";
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { options } from "../../auth/[...nextauth]/options";
 
-export const GET = auth(async (req: any) => {
-  if (!req.auth) {
-    return NextResponse.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      }
-    )
+export async function GET() {
+  const session = await getServerSession(options);
+
+  if (!session || !session.user?.isAdmin) {
+    console.log("Unauthorized access attempt");
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  const { user } = req.auth
-  await dbConnect()
-  const orders = await OrderModel.find({ user: user._id })
-  return NextResponse.json(orders)
-}) as any
+
+  await dbConnect();
+  const orders = await OrderModel.find({ user: session.user._id });
+  return NextResponse.json(orders);
+}

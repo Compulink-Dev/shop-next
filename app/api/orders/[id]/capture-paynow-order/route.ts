@@ -1,9 +1,11 @@
 //@ts-nocheck
-import { auth } from '@/lib/auth';
-import dbConnect from '@/lib/dbConnect';
-import OrderModel from '@/lib/models/OrderModel';
-import { paynow } from '@/lib/paynow';
-import { NextResponse } from 'next/server';
+import { options } from "@/app/api/auth/[...nextauth]/options";
+import { auth } from "@/lib/auth";
+import dbConnect from "@/lib/dbConnect";
+import OrderModel from "@/lib/models/OrderModel";
+import { paynow } from "@/lib/paynow";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
 
 // Define a type for the request and params
 type Context = {
@@ -11,10 +13,13 @@ type Context = {
 };
 
 // Ensure the handler returns a Promise<Response>
-export const POST = auth(async (req: Request, context: Context): Promise<Response> => {
-  // Ensure authentication is present
-  if (!req.auth) {
-    return new Response(JSON.stringify({ message: 'Unauthorized' }), { status: 401 });
+
+export async function POST(req: Request, context: Context) {
+  const session = await getServerSession(options);
+
+  if (!session || !session.user?.isAdmin) {
+    console.log("Unauthorized access attempt");
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -25,7 +30,12 @@ export const POST = auth(async (req: Request, context: Context): Promise<Respons
     const order = await OrderModel.findById(context.params.id);
 
     if (!order || !order.paymentPollUrl) {
-      return new Response(JSON.stringify({ message: 'Order not found or paymentPollUrl missing' }), { status: 404 });
+      return new Response(
+        JSON.stringify({
+          message: "Order not found or paymentPollUrl missing",
+        }),
+        { status: 404 }
+      );
     }
 
     // Call PayNow to capture the order
@@ -46,10 +56,18 @@ export const POST = auth(async (req: Request, context: Context): Promise<Respons
       // Return the updated order details as the response
       return new Response(JSON.stringify(updatedOrder), { status: 200 });
     } else {
-      return new Response(JSON.stringify({ message: 'Payment not completed' }), { status: 400 });
+      return new Response(
+        JSON.stringify({ message: "Payment not completed" }),
+        { status: 400 }
+      );
     }
   } catch (err) {
     // Return a 500 error with the error message
-    return new Response(JSON.stringify({ message: err instanceof Error ? err.message : 'Internal Server Error' }), { status: 500 });
+    return new Response(
+      JSON.stringify({
+        message: err instanceof Error ? err.message : "Internal Server Error",
+      }),
+      { status: 500 }
+    );
   }
-});
+}

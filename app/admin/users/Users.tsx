@@ -1,36 +1,44 @@
-'use client'
+"use client";
 
-import { User } from '@/lib/models/UserModel'
-import { formatId } from '@/lib/utils'
-import Link from 'next/link'
-import toast from 'react-hot-toast'
-import useSWR from 'swr'
-import useSWRMutation from 'swr/mutation'
+import AdminLoading from "@/components/admin/AdminLoading";
+import { User } from "@/lib/models/UserModel";
+import { formatId } from "@/lib/utils";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
+
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  console.log("Fetching from:", url); // Check if API is being called
+  if (!res.ok) throw new Error("Failed to fetch data");
+  return res.json();
+};
 
 export default function Users() {
-  const { data: users, error } = useSWR(`/api/admin/users`)
+  const { data: users, error } = useSWR(`/api/admin/users`, fetcher);
   const { trigger: deleteUser } = useSWRMutation(
     `/api/admin/users`,
     async (url, { arg }: { arg: { userId: string } }) => {
-      const toastId = toast.loading('Deleting user...')
+      const toastId = toast.loading("Deleting user...");
       const res = await fetch(`${url}/${arg.userId}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       res.ok
-        ? toast.success('User deleted successfully', {
+        ? toast.success("User deleted successfully", {
             id: toastId,
           })
         : toast.error(data.message, {
             id: toastId,
-          })
+          });
     }
-  )
-  if (error) return 'An error has occurred.'
-  if (!users) return 'Loading...'
+  );
+  if (error) return "An error has occurred.";
+  if (!users) return <AdminLoading />;
 
   return (
     <div>
@@ -40,11 +48,11 @@ export default function Users() {
         <table className="table table-zebra">
           <thead>
             <tr>
-              <th>id</th>
-              <th>name</th>
-              <th>email</th>
-              <th>admin</th>
-              <th>actions</th>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Admin</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -53,7 +61,7 @@ export default function Users() {
                 <td>{formatId(user._id)}</td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
-                <td>{user.isAdmin ? 'YES' : 'NO'}</td>
+                <td>{user.isAdmin ? "YES" : "NO"}</td>
 
                 <td>
                   <Link
@@ -67,7 +75,7 @@ export default function Users() {
                   <button
                     onClick={() => deleteUser({ userId: user._id })}
                     type="button"
-                    className="btn btn-ghost btn-sm"
+                    className="btn btn-ghost btn-sm text-red-500"
                   >
                     Delete
                   </button>
@@ -78,5 +86,5 @@ export default function Users() {
         </table>
       </div>
     </div>
-  )
+  );
 }

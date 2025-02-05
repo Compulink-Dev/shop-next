@@ -1,20 +1,20 @@
-'use client'
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
-import toast from 'react-hot-toast'
+"use client";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 type Inputs = {
-  name: string
-  email: string
-  password: string
-  confirmPassword: string
-}
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
 const Form = () => {
-  const { data: session, update } = useSession()
-  const router = useRouter()
+  const { data: session, update } = useSession();
+  const router = useRouter();
 
   const {
     register,
@@ -24,35 +24,35 @@ const Form = () => {
     formState: { errors, isSubmitting },
   } = useForm<Inputs>({
     defaultValues: {
-      name: '',
-      email: '',
-      password: '',
+      name: "",
+      email: "",
+      password: "",
     },
-  })
+  });
 
   useEffect(() => {
     if (session && session.user) {
-      setValue('name', session.user.name!)
-      setValue('email', session.user.email!)
+      setValue("name", session.user.name!);
+      setValue("email", session.user.email!);
     }
-  }, [router, session, setValue])
+  }, [router, session, setValue]);
 
   const formSubmit: SubmitHandler<Inputs> = async (form) => {
-    const { name, email, password } = form
+    const { name, email, password } = form;
     try {
-      const res = await fetch('/api/auth/profile', {
-        method: 'PUT',
+      const res = await fetch("/api/auth/profile", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name,
           email,
           password,
         }),
-      })
+      });
       if (res.status === 200) {
-        toast.success('Profile updated successfully')
+        toast.success("Profile updated successfully");
         const newSession = {
           ...session,
           user: {
@@ -60,20 +60,20 @@ const Form = () => {
             name,
             email,
           },
-        }
-        await update(newSession)
+        };
+        await update(newSession);
       } else {
-        const data = await res.json()
-        toast.error(data.message || 'error')
+        const data = await res.json();
+        toast.error(data.message || "error");
       }
     } catch (err: any) {
       const error =
         err.response && err.response.data && err.response.data.message
           ? err.response.data.message
-          : err.message
-      toast.error(error)
+          : err.message;
+      toast.error(error);
     }
-  }
+  };
   return (
     <div className="max-w-sm  mx-auto card bg-base-300 my-4">
       <div className="card-body">
@@ -86,8 +86,8 @@ const Form = () => {
             <input
               type="text"
               id="name"
-              {...register('name', {
-                required: 'Name is required',
+              {...register("name", {
+                required: "Name is required",
               })}
               className="input input-bordered w-full max-w-sm"
             />
@@ -102,11 +102,11 @@ const Form = () => {
             <input
               type="text"
               id="email"
-              {...register('email', {
-                required: 'Email is required',
+              {...register("email", {
+                required: "Email is required",
                 pattern: {
                   value: /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/,
-                  message: 'Email is invalid',
+                  message: "Email is invalid",
                 },
               })}
               className="input input-bordered w-full max-w-sm"
@@ -122,7 +122,7 @@ const Form = () => {
             <input
               type="password"
               id="password"
-              {...register('password', {})}
+              {...register("password", {})}
               className="input input-bordered w-full max-w-sm"
             />
             {errors.password?.message && (
@@ -136,10 +136,10 @@ const Form = () => {
             <input
               type="password"
               id="confirmPassword"
-              {...register('confirmPassword', {
+              {...register("confirmPassword", {
                 validate: (value) => {
-                  const { password } = getValues()
-                  return password === value || 'Passwords should match!'
+                  const { password } = getValues();
+                  return password === value || "Passwords should match!";
                 },
               })}
               className="input input-bordered w-full max-w-sm"
@@ -160,11 +160,19 @@ const Form = () => {
               )}
               Update
             </button>
+            <button
+              onClick={() => router.back()}
+              className="btn my-2 w-full"
+              type="button"
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
           </div>
         </form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Form
+export default Form;

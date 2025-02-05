@@ -1,6 +1,5 @@
 import dbConnect from '@/lib/dbConnect';
 import OrderModel from '@/lib/models/OrderModel';
-import ProductModel from '@/lib/models/ProductModel';
 
 const validStatuses = ['Order Received', 'Shipped', 'In Transit', 'Out for Delivery', 'Delivered', 'Collected'];
 
@@ -46,12 +45,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const { id } = params;
 
     try {
-        const { productId, status, message } = await req.json();
+        const { status, message } = await req.json();
 
         // Validate input
-        if (!productId || !status || status.trim() === '') {
+        if (!status || status.trim() === '') {
             return new Response(
-                JSON.stringify({ message: 'Product ID and status are required' }),
+                JSON.stringify({ message: 'Status is required' }),
                 { status: 400 }
             );
         }
@@ -76,7 +75,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         // Add tracking information
         order.tracking.push({
-            product: productId,
             status,
             message,
             timestamp: new Date(),

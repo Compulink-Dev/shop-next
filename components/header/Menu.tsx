@@ -1,31 +1,31 @@
-'use client'
-import useCartService from '@/lib/hooks/useCartStore'
-import useLayoutService from '@/lib/hooks/useLayout'
-import { signIn, signOut, useSession } from 'next-auth/react'
+"use client";
+import useCartService from "@/lib/hooks/useCartStore";
+import useLayoutService from "@/lib/hooks/useLayout";
+import { signIn, signOut, useSession } from "next-auth/react";
 
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { SearchBox } from './SearchBox'
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { SearchBox } from "./SearchBox";
 
 const Menu = () => {
-  const { items, init } = useCartService()
-  const [mounted, setMounted] = useState(false)
+  const { items, init } = useCartService();
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   const signoutHandler = () => {
-    signOut({ callbackUrl: '/signin' })
-    init()
-  }
+    signOut({ callbackUrl: "/signin" });
+    init();
+  };
 
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
-  const { theme, toggleTheme } = useLayoutService()
+  const { theme, toggleTheme } = useLayoutService();
 
   const handleClick = () => {
-    ; (document.activeElement as HTMLElement).blur()
-  }
+    (document.activeElement as HTMLElement).blur();
+  };
 
   return (
     <>
@@ -33,20 +33,20 @@ const Menu = () => {
         <SearchBox />
       </div>
       <div>
-        <ul className="flex items-stretch">
+        <ul className="flex items-center">
           <i>
             {mounted && (
               <label className="swap swap-rotate">
                 {/* this hidden checkbox controls the state */}
                 <input
                   type="checkbox"
-                  checked={theme === 'light'}
+                  checked={theme === "light"}
                   onChange={toggleTheme}
                 />
 
                 {/* sun icon */}
                 <svg
-                  className="swap-on fill-current w-8 h-8"
+                  className="swap-on fill-current w-6 h-6"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                 >
@@ -55,7 +55,7 @@ const Menu = () => {
 
                 {/* moon icon */}
                 <svg
-                  className="swap-off fill-current w-10 h-10"
+                  className="swap-off fill-current w-6 h-6"
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                 >
@@ -69,7 +69,7 @@ const Menu = () => {
               Cart
               {mounted && items.length != 0 && (
                 <div className="badge bg-blue-800 text-white">
-                  {items.reduce((a, c) => a + c.qty, 0)}{' '}
+                  {items.reduce((a, c) => a + c.qty, 0)}{" "}
                 </div>
               )}
             </Link>
@@ -78,7 +78,10 @@ const Menu = () => {
             <>
               <li>
                 <div className="dropdown dropdown-bottom dropdown-end">
-                  <label tabIndex={0} className="btn btn-ghost rounded-btn capitalize">
+                  <label
+                    tabIndex={0}
+                    className="btn btn-ghost rounded-btn capitalize"
+                  >
                     {session.user.name}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +89,7 @@ const Menu = () => {
                       viewBox="0 0 24 24"
                       strokeWidth={1.5}
                       stroke="currentColor"
-                      className="w-6 h-6"
+                      className="w-4 h-4"
                     >
                       <path
                         strokeLinecap="round"
@@ -136,7 +139,7 @@ const Menu = () => {
         </ul>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Menu
+export default Menu;

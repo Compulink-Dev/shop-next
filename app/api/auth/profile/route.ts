@@ -1,38 +1,45 @@
-import { auth } from '@/lib/auth'
-import dbConnect from '@/lib/dbConnect'
-import UserModel from '@/lib/models/UserModel'
-import bcrypt from 'bcryptjs'
+import dbConnect from "@/lib/dbConnect";
+import UserModel from "@/lib/models/UserModel";
+import bcrypt from "bcryptjs";
+import { getServerSession } from "next-auth";
+import { options } from "../[...nextauth]/options";
+import { NextResponse } from "next/server";
 
-export const PUT = auth(async (req) => {
-  if (!req.auth) {
-    return Response.json({ message: 'Not authenticated' }, { status: 401 })
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(options);
+
+  if (!session || !session.user?.isAdmin) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
-  const { user } = req.auth
-  const { name, email, password } = await req.json()
-  await dbConnect()
+
+  const { name, email, password } = await req.json();
+  await dbConnect();
   try {
-    const dbUser = await UserModel.findById(user._id)
+    const dbUser = await UserModel.findById(session.user._id);
     if (!dbUser) {
       return Response.json(
-        { message: 'User not found' },
+        { message: "User not found" },
         {
           status: 404,
         }
-      )
+      );
     }
-    dbUser.name = name
-    dbUser.email = email
+    dbUser.name = name;
+    dbUser.email = email;
     dbUser.password = password
       ? await bcrypt.hash(password, 5)
-      : dbUser.password
-    await dbUser.save()
-    return Response.json({ message: 'User has been updated' })
+      : dbUser.password;
+    await dbUser.save();
+    return Response.json({ message: "User has been updated" });
   } catch (err: any) {
     return Response.json(
       { message: err.message },
       {
         status: 500,
       }
-    )
+    );
   }
-}) as any
+}

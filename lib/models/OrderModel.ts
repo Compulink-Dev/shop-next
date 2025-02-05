@@ -1,28 +1,26 @@
-import mongoose from 'mongoose'
-
+import mongoose from "mongoose";
 
 const validStatuses = [
-  'Order Received',
-  'Shipped',
-  'In Transit',
-  'Out for Delivery',
-  'Delivered',
-  'Collected',
+  "Order Received",
+  "Shipped",
+  "In Transit",
+  "Out for Delivery",
+  "Delivered",
+  "Collected",
 ];
-
 
 const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     items: [
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
+          ref: "Product",
           required: true,
         },
         name: { type: String, required: true },
@@ -30,9 +28,8 @@ const orderSchema = new mongoose.Schema(
         qty: { type: Number, required: true },
         image: { type: String, required: true },
         price: { type: Number, required: true },
-        color: { type: String }, // Add color
-        size: { type: String },   // Add size
-
+        color: { type: String },
+        size: { type: String },
       },
     ],
     shippingAddress: {
@@ -57,11 +54,11 @@ const orderSchema = new mongoose.Schema(
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
-          required: true,
+          ref: "Product",
+          required: false, // Make product field optional
         },
         status: { type: String, enum: validStatuses, required: true },
-        message: { type: String }, // Optional
+        message: { type: String },
         timestamp: { type: Date, default: Date.now },
       },
     ],
@@ -69,78 +66,38 @@ const orderSchema = new mongoose.Schema(
   {
     timestamps: true,
   }
-)
+);
 
-orderSchema.pre('save', function (next) {
+orderSchema.pre("save", function (next) {
   if (this.isNew) {
     this.tracking.push({
-      product: null, // Or a placeholder
-      status: 'Order Received',
-      message: 'Your order has been received.',
+      product: null,
+      status: "Order Received",
+      message: "Your order has been received.",
     });
   }
   next();
 });
 
-const OrderModel = mongoose.models.Order || mongoose.model('Order', orderSchema)
+const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 
-export default OrderModel
+export default Order;
 
-export type Order = {
-  _id: string
-  user?: { name: string }
-  items: [OrderItem]
-  shippingAddress: {
-    fullName: string
-    address: string
-    city: string
-    postalCode: string
-    country: string
-  }
-  paymentMethod: string
-  paymentResult?: { id: string; status: string; email_address: string }
-  itemsPrice: number
-  shippingPrice: number
-  taxPrice: number
-  totalPrice: number
-  isPaid: boolean
-  isDelivered: boolean
-  paidAt?: string
-  deliveredAt?: string
-  createdAt: string
-  estimatedDeliveryAt: string
+export interface ShippingAddress {
+  fullName: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  country: string;
 }
 
-export type OrderItem = {
-  name: string
-  slug: string
-  qty: number
-  image: string
-  price: number
-  color: string
-  size: string
-}
-
-export type ShippingAddress = {
-  fullName: string
-  address: string
-  city: string
-  postalCode: string
-  country: string
-}
-
-
-export type TrackingEntry = {
-  status: TrackingStatus,
-  timestamp: string; // ISO string
-  message?: string; // Optional
-};
-
-export enum TrackingStatus {
-  OrderReceived = 'Order Received',
-  Shipped = 'Shipped',
-  InTransit = 'In Transit',
-  OutForDelivery = 'Out for Delivery',
-  Delivered = 'Delivered',
-  Collected = 'Collected',
+export interface OrderItem {
+  product: string; // Assuming ObjectId will be stored as a string
+  name: string;
+  slug: string;
+  qty: number;
+  image: string;
+  price: number;
+  color?: string;
+  size?: string;
 }

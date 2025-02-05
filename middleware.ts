@@ -1,48 +1,19 @@
-import NextAuth from 'next-auth'
-import type { NextAuthConfig } from 'next-auth'
+// Ref: https://next-auth.js.org/configuration/nextjs#advanced-usage
+import { withAuth, NextRequestWithAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-// Define the protected paths as regex patterns
-const protectedPaths = [
-  /^\/shipping/,
-  /^\/payment/,
-  /^\/place-order/,
-  /^\/profile/,
-  /^\/order\/.+$/, // Matches paths like /order/<id>
-  /^\/admin/,
-]
-
-// Define the NextAuth configuration
-const authConfig = {
-  providers: [],
-  callbacks: {
-    authorized({ request, auth }: any) {
-      const { pathname } = request.nextUrl
-
-      // Check if the current pathname matches any of the protected paths
-      if (protectedPaths.some((pattern) => pattern.test(pathname))) {
-        // Allow access only if the user is authenticated
-        return !!auth
-      }
-
-      // Allow access to other paths
-      return true
-    },
+export default withAuth(
+  function middleware(request: NextRequestWithAuth) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("Token in middleware:", request.nextauth?.token);
+    }
+    return NextResponse.next();
   },
-} satisfies NextAuthConfig
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token, // Authorize if the token exists
+    },
+  }
+);
 
-// Export the middleware
-export const { auth: middleware } = NextAuth(authConfig)
-
-// Export middleware configuration
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
-}
+export const config = { matcher: ["/dashboard"] };

@@ -1,27 +1,32 @@
 'use client'
 import { useState, useEffect } from 'react';
 import Modal from '@/components/Modal';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
 interface TrackingData {
     tracking: Array<{
         status: string;
         timestamp: string;
         message?: string;
+        location?: {
+            lat: number;
+            lng: number;
+        };
     }>;
 }
 
 interface OrderTrackingProps {
     orderId: string;
+    session: { user: { isAdmin: boolean } } | null; // Add session prop
 }
 
-const OrderTracking: React.FC<OrderTrackingProps> = ({ orderId }) => {
+const OrderTracking: React.FC<OrderTrackingProps> = ({ orderId, session }) => {
     const [tracking, setTracking] = useState<TrackingData['tracking']>([]);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newStatus, setNewStatus] = useState('');
     const [newMessage, setNewMessage] = useState('');
-    const [products, setProducts] = useState<any[]>([]); // Added to store product data
 
     // Fetch order and tracking data
     useEffect(() => {
@@ -34,11 +39,6 @@ const OrderTracking: React.FC<OrderTrackingProps> = ({ orderId }) => {
 
                 const data = await response.json();
                 setTracking(data.tracking || []);
-
-                // Fetch products in the order (assuming you have product details in the order)
-                const orderResponse = await fetch(`/api/orders/${orderId}`);
-                const orderData = await orderResponse.json();
-                setProducts(orderData.items); // assuming `items` has product details
             } catch (error) {
                 setError(error instanceof Error ? error.message : 'An error occurred');
             } finally {
@@ -50,9 +50,8 @@ const OrderTracking: React.FC<OrderTrackingProps> = ({ orderId }) => {
     }, [orderId]);
 
     // Handle form submission for adding tracking data
-    const handleUpdateTracking = async (productId: string) => {
+    const handleUpdateTracking = async () => {
         const payload = {
-            productId,  // Use dynamically passed productId
             status: newStatus,
             message: newMessage,
         };
@@ -90,16 +89,20 @@ const OrderTracking: React.FC<OrderTrackingProps> = ({ orderId }) => {
         return <div className="text-red-500">Error: {error}</div>;
     }
 
+    const latestLocation = tracking.find(item => item.location);
+
     return (
         <div>
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">Tracking Information</h2>
-                <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded"
-                    onClick={() => setIsModalOpen(true)}
-                >
-                    Update
-                </button>
+                {session?.user.isAdmin && (
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                        onClick={() => setIsModalOpen(true)}
+                    >
+                        Update
+                    </button>
+                )}
             </div>
 
             {tracking.length > 0 ? (
@@ -121,47 +124,49 @@ const OrderTracking: React.FC<OrderTrackingProps> = ({ orderId }) => {
                 <div className="mt-2 text-red-500">No tracking data available</div>
             )}
 
+            {/* Google Map for showing the location */}
+            {latestLocation && latestLocation.location && (
+                <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY">
+                    <GoogleMap
+                        mapContainerStyle={{ width: '100%', height: '400px' }}
+                        center={latestLocation.location}
+                        zoom={10}
+                    >
+                        <Marker position={latestLocation.location} />
+                    </GoogleMap>
+                </LoadScript>
+            )}
+
             {/* Modal for adding tracking updates */}
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <h3 className="text-lg font-bold">Add Tracking Update</h3>
-                <div className="flex flex-col gap-4 mt-4">
-                    <select
-                        onChange={(e) => setNewStatus(e.target.value)}
-                        value={newStatus}
-                        className="border p-2 rounded"
-                    >
-                        <option value="">Select Status</option>
-                        <option value="Shipped">Shipped</option>
-                        <option value="In Transit">In Transit</option>
-                        <option value="Delivered">Delivered</option>
-                    </select>
-                    <textarea
-                        placeholder="Message (optional)"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        className="border p-2 rounded"
-                    ></textarea>
-                    {products.length > 0 && (
+            {session?.user.isAdmin && (
+                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                    <h3 className="text-lg font-bold">Add Tracking Update</h3>
+                    <div className="flex flex-col gap-4 mt-4">
                         <select
+                            onChange={(e) => setNewStatus(e.target.value)}
+                            value={newStatus}
                             className="border p-2 rounded"
-                            onChange={(e) => handleUpdateTracking(e.target.value)} // Pass productId dynamically
                         >
-                            <option value="">Select Product</option>
-                            {products.map((product) => (
-                                <option key={product.product._id} value={product.product._id}>
-                                    {product.product.name}
-                                </option>
-                            ))}
+                            <option value="">Select Status</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="In Transit">In Transit</option>
+                            <option value="Delivered">Delivered</option>
                         </select>
-                    )}
-                    <button
-                        className="bg-green-500 text-white px-4 py-2 rounded"
-                        onClick={() => handleUpdateTracking('675c375459293f8af7f2c03b')} // Pass productId dynamically
-                    >
-                        Submit
-                    </button>
-                </div>
-            </Modal>
+                        <textarea
+                            placeholder="Message (optional)"
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            className="border p-2 rounded"
+                        ></textarea>
+                        <button
+                            className="bg-green-500 text-white px-4 py-2 rounded"
+                            onClick={handleUpdateTracking}
+                        >
+                            Submit
+                        </button>
+                    </div>
+                </Modal>
+            )}
         </div>
     );
 };
