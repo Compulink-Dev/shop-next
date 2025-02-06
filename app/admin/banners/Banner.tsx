@@ -132,8 +132,8 @@ export default function Banners() {
                       <DialogHeader>
                         <DialogTitle>Confirm Deletion</DialogTitle>
                         <DialogDescription>
-                          Are you sure you want to delete this banner? This
-                          action cannot be undone.
+                          Are you sure you want to delete this banner! This
+                          action cannot be undone?
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
