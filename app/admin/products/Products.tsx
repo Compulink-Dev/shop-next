@@ -8,10 +8,18 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, Trash2, Pen } from "lucide-react";
 import DataError from "@/components/admin/DataError";
 import { fetcher } from "@/lib/services/fetcher";
 import AdminLoading from "@/components/admin/AdminLoading";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface UploadedProduct {
   part: string;
@@ -32,6 +40,7 @@ export default function Products() {
     isLoading,
   } = useSWR(`/api/admin/products`, fetcher);
   const [uploadedData, setUploadedData] = useState<any[]>([]);
+  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -41,36 +50,21 @@ export default function Products() {
       const toastId = toast.loading("Deleting product...");
       const res = await fetch(`${url}/${arg.productId}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
       const data = await res.json();
       res.ok
-        ? toast.success("Product deleted successfully", {
-            id: toastId,
-          })
-        : toast.error(data.message, {
-            id: toastId,
-          });
+        ? toast.success("Product deleted successfully", { id: toastId })
+        : toast.error(data.message, { id: toastId });
     }
   );
 
-  const { trigger: createProduct, isMutating: isCreating } = useSWRMutation(
-    `/api/admin/products`,
-    async (url) => {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await res.json();
-      if (!res.ok) return toast.error(data.message);
-      toast.success("Product created successfully");
-      router.push(`/admin/products/${data.product._id}`);
+  const handleDeleteConfirm = () => {
+    if (deleteProductId) {
+      deleteProduct({ productId: deleteProductId });
+      setDeleteProductId(null);
     }
-  );
+  };
 
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -85,19 +79,14 @@ export default function Products() {
       const sheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json<UploadedProduct>(sheet);
 
-      setUploadedData(jsonData); // Save the parsed data for display
-
-      // Send the data to the server
+      setUploadedData(jsonData);
       for (const product of jsonData) {
         try {
           const response = await fetch(`/api/admin/products/bulk`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(product),
           });
-
           if (!response.ok) {
             const errorData = await response.json();
             toast.error(`Failed to add product: ${errorData.message}`);
@@ -115,10 +104,7 @@ export default function Products() {
   };
 
   if (error) return <div>An error has occurred: {error.message}</div>;
-
   if (isLoading) return <AdminLoading />;
-
-  // If no orders are returned, display an appropriate message
   if (!products || products.length === 0) return <DataError name="products" />;
 
   return (
@@ -126,15 +112,6 @@ export default function Products() {
       <div className="flex justify-between items-center">
         <h1 className="py-4 text-2xl">Products</h1>
         <div className="space-x-2">
-          <button
-            disabled={isCreating}
-            onClick={() => createProduct()}
-            className="btn btn-primary btn-sm"
-          >
-            {isCreating && <span className="loading loading-spinner"></span>}
-            <Plus size={12} />
-            <p className="">Create</p>
-          </button>
           <input
             type="file"
             accept=".xlsx, .xls"
@@ -176,18 +153,15 @@ export default function Products() {
                 <td>{product.category}</td>
                 <td>{product.countInStock}</td>
                 <td>{product.rating}</td>
-                <td className="flex items-center">
+                <td className="flex items-center space-x-2">
                   <Link
                     href={`/admin/products/${product._id}`}
-                    type="button"
                     className="btn btn-ghost btn-sm"
                   >
                     Edit
                   </Link>
-                  &nbsp;
                   <button
-                    onClick={() => deleteProduct({ productId: product._id! })}
-                    type="button"
+                    onClick={() => setDeleteProductId(product._id!)}
                     className="btn btn-ghost text-red-500 btn-sm"
                   >
                     Delete
@@ -197,15 +171,34 @@ export default function Products() {
             ))}
           </tbody>
         </table>
-        {/* {uploadedData.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl font-semibold">Uploaded Data</h2>
-            <pre className="bg-gray-100 p-4 rounded shadow overflow-x-auto">
-              {JSON.stringify(uploadedData, null, 2)}
-            </pre>
-          </div>
-        )} */}
       </div>
+
+      <Dialog
+        open={!!deleteProductId}
+        onOpenChange={() => setDeleteProductId(null)}
+      >
+        <DialogContent className="bg-color">
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p>
+            Are you sure you want to delete this product? This action cannot be
+            undone.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              className="text-black"
+              onClick={() => setDeleteProductId(null)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

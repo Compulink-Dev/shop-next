@@ -2,14 +2,23 @@
 import useCartService from "@/lib/hooks/useCartStore";
 import useLayoutService from "@/lib/hooks/useLayout";
 import { signIn, signOut, useSession } from "next-auth/react";
-
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SearchBox } from "./SearchBox";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const Menu = () => {
   const { items, init } = useCartService();
   const [mounted, setMounted] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -17,15 +26,11 @@ const Menu = () => {
   const signoutHandler = () => {
     signOut({ callbackUrl: "/signin" });
     init();
+    setShowDialog(false);
   };
 
   const { data: session } = useSession();
-
   const { theme, toggleTheme } = useLayoutService();
-
-  const handleClick = () => {
-    (document.activeElement as HTMLElement).blur();
-  };
 
   return (
     <>
@@ -67,64 +72,48 @@ const Menu = () => {
           <li>
             <Link className="btn btn-ghost rounded-btn" href="/cart">
               Cart
-              {mounted && items.length != 0 && (
+              {mounted && items.length !== 0 && (
                 <div className="badge bg-blue-800 text-white">
-                  {items.reduce((a, c) => a + c.qty, 0)}{" "}
+                  {items.reduce((a, c) => a + c.qty, 0)}
                 </div>
               )}
             </Link>
           </li>
           {session && session.user ? (
-            <>
-              <li>
-                <div className="dropdown dropdown-bottom dropdown-end">
-                  <label
-                    tabIndex={0}
-                    className="btn btn-ghost rounded-btn capitalize"
-                  >
-                    {session.user.name}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-4 h-4"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                      />
-                    </svg>
-                  </label>
-                  <ul
-                    tabIndex={0}
-                    className="menu dropdown-content z-[1] p-2 shadow bg-base-300 rounded-box w-52 "
-                  >
-                    {session.user.isAdmin && (
-                      <li onClick={handleClick}>
-                        <Link href="/admin/dashboard">Admin Dashboard</Link>
-                      </li>
-                    )}
-                    <li onClick={handleClick}>
-                      <Link href="/order-tracking">Order tracking </Link>
+            <li>
+              <div className="dropdown dropdown-bottom dropdown-end">
+                <label
+                  tabIndex={0}
+                  className="btn btn-ghost rounded-btn capitalize"
+                >
+                  {session.user.name}
+                </label>
+                <ul
+                  tabIndex={0}
+                  className="menu dropdown-content z-[1] p-2 shadow bg-base-300 rounded-box w-52"
+                >
+                  {session.user.isAdmin && (
+                    <li>
+                      <Link href="/admin/dashboard">Admin Dashboard</Link>
                     </li>
-                    <li onClick={handleClick}>
-                      <Link href="/order-history">Order history </Link>
-                    </li>
-                    <li onClick={handleClick}>
-                      <Link href="/profile">Profile</Link>
-                    </li>
-                    <li onClick={handleClick}>
-                      <button type="button" onClick={signoutHandler}>
-                        Sign out
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-            </>
+                  )}
+                  <li>
+                    <Link href="/order-tracking">Order tracking</Link>
+                  </li>
+                  <li>
+                    <Link href="/order-history">Order history</Link>
+                  </li>
+                  <li>
+                    <Link href="/profile">Profile</Link>
+                  </li>
+                  <li>
+                    <button type="button" onClick={() => setShowDialog(true)}>
+                      Sign out
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </li>
           ) : (
             <li>
               <button
@@ -138,6 +127,28 @@ const Menu = () => {
           )}
         </ul>
       </div>
+
+      {/* Sign Out Confirmation Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="bg-color">
+          <DialogTitle>Sign Out</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to sign out?
+          </DialogDescription>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              className="text-black"
+              onClick={() => setShowDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={signoutHandler}>
+              Sign Out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

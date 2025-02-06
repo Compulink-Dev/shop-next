@@ -1,14 +1,27 @@
 "use client";
-import AdminLoading from "@/components/admin/AdminLoading";
-import DataError from "@/components/admin/DataError";
-import { Banner } from "@/lib/models/BannerModel";
-import { fetcher } from "@/lib/services/fetcher";
-import { formatId } from "@/lib/utils";
-import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import Link from "next/link";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
+import toast from "react-hot-toast";
+import { Pen, Trash } from "lucide-react";
+
+import AdminLoading from "@/components/admin/AdminLoading";
+import DataError from "@/components/admin/DataError";
+import { fetcher } from "@/lib/services/fetcher";
+import { formatId } from "@/lib/utils";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function Banners() {
   const {
@@ -18,8 +31,10 @@ export default function Banners() {
   } = useSWR(`/api/admin/banners`, fetcher);
 
   const router = useRouter();
+  const [selectedBannerId, setSelectedBannerId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { trigger: deleteBanner } = useSWRMutation(
+  const { trigger: deleteBanner, isMutating: isDeleting } = useSWRMutation(
     `/api/admin/banners`,
     async (url, { arg }: { arg: { bannerId: string } }) => {
       const toastId = toast.loading("Deleting banner...");
@@ -30,13 +45,14 @@ export default function Banners() {
         },
       });
       const data = await res.json();
-      res.ok
-        ? toast.success("Banner deleted successfully", {
-            id: toastId,
-          })
-        : toast.error(data.message, {
-            id: toastId,
-          });
+
+      if (res.ok) {
+        toast.success("Banner deleted successfully", { id: toastId });
+        setIsDialogOpen(false); // Close dialog
+      } else {
+        toast.error(data.message, { id: toastId });
+      }
+      setSelectedBannerId(null);
     }
   );
 
@@ -57,25 +73,23 @@ export default function Banners() {
     }
   );
 
+  const openDeleteDialog = (bannerId: string) => {
+    setSelectedBannerId(bannerId);
+    setIsDialogOpen(true);
+  };
+
   if (error) return <div>An error has occurred: {error.message}</div>;
-
   if (isLoading) return <AdminLoading />;
-
-  // If no orders are returned, display an appropriate message
   if (!banner || banner.length === 0) return <DataError name="banner" />;
 
   return (
     <div>
       <div className="flex justify-between items-center">
         <h1 className="py-4 text-2xl">Banners</h1>
-        <button
-          disabled={isCreating}
-          onClick={() => createBanner()}
-          className="btn btn-primary btn-sm"
-        >
+        <Button disabled={isCreating} onClick={() => createBanner()}>
           {isCreating && <span className="loading loading-spinner"></span>}
           Create
-        </button>
+        </Button>
       </div>
 
       <div className="overflow-x-auto">
@@ -84,29 +98,68 @@ export default function Banners() {
             <tr>
               <th>ID</th>
               <th>Name</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {banner.map((banner: Banner) => (
-              <tr key={banner._id}>
-                <td>{formatId(banner._id!)}</td>
-                <td>{banner.name}</td>
+            {banner.map((bannerItem: any) => (
+              <tr key={bannerItem._id}>
+                <td>{formatId(bannerItem._id!)}</td>
+                <td>{bannerItem.name}</td>
                 <td>
                   <Link
-                    href={`/admin/banners/${banner._id}`}
-                    type="button"
+                    href={`/admin/banners/${bannerItem._id}`}
                     className="btn btn-ghost btn-sm"
                   >
+                    <Pen size={14} />
                     Edit
                   </Link>
                   &nbsp;
-                  <button
-                    onClick={() => deleteBanner({ bannerId: banner._id! })}
-                    type="button"
-                    className="btn btn-ghost text-red-500 btn-sm"
+                  <Dialog
+                    open={isDialogOpen && selectedBannerId === bannerItem._id}
+                    onOpenChange={setIsDialogOpen}
                   >
-                    Delete
-                  </button>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="text-red-500 btn-sm"
+                        onClick={() => openDeleteDialog(bannerItem._id!)}
+                      >
+                        <Trash size={14} /> Delete
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[400px] bg-color">
+                      <DialogHeader>
+                        <DialogTitle>Confirm Deletion</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to delete this banner? This
+                          action cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          className="text-black"
+                          onClick={() => setIsDialogOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() =>
+                            deleteBanner({ bannerId: bannerItem._id! })
+                          }
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? (
+                            <span className="loading loading-spinner"></span>
+                          ) : (
+                            "Confirm"
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </td>
               </tr>
             ))}
