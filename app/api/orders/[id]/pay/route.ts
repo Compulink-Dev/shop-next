@@ -1,15 +1,6 @@
-import dbConnect from "@/lib/dbConnect";
-import OrderModel from "@/lib/models/OrderModel";
 import { NextResponse } from "next/server";
-
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  await dbConnect();
-  const order = await OrderModel.findById(params.id);
-  return NextResponse.json(order);
-}
+import Order from "@/lib/models/OrderModel";
+import dbConnect from "@/lib/dbConnect";
 
 export async function PATCH(
   req: Request,
@@ -20,7 +11,7 @@ export async function PATCH(
     const { orderId } = params;
     const { isPaid } = await req.json(); // Assuming payment update sends { isPaid: true }
 
-    const updatedOrder = await OrderModel.findByIdAndUpdate(
+    const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       { isPaid },
       { new: true }

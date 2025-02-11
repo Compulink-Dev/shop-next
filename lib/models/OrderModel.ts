@@ -50,6 +50,7 @@ const orderSchema = new mongoose.Schema(
     paidAt: { type: Date },
     deliveredAt: { type: Date },
     estimatedDeliveryAt: { type: Date },
+    paymentPollUrl: { type: String }, // Ensure this field is present
     tracking: [
       {
         product: {
@@ -78,6 +79,17 @@ orderSchema.pre("save", function (next) {
   }
   next();
 });
+
+// Update `isPaid` to true when payment is successful
+orderSchema.methods.markAsPaid = function (paymentResult: any) {
+  if (paymentResult.status === "success") {
+    this.isPaid = true;
+    this.paidAt = new Date();
+    this.paymentResult = paymentResult; // Store payment result info
+    return this.save();
+  }
+  return Promise.reject(new Error("Payment was not successful"));
+};
 
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 

@@ -1,14 +1,14 @@
-'use client'
-import CheckoutSteps from '@/components/CheckoutSteps'
-import useCartService from '@/lib/hooks/useCartStore'
-import { ShippingAddress } from '@/lib/models/OrderModel';
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { SubmitHandler, ValidationRule, useForm } from 'react-hook-form'
+"use client";
+import CheckoutSteps from "@/components/CheckoutSteps";
+import useCartService from "@/lib/hooks/useCartStore";
+import { ShippingAddress } from "@/lib/models/OrderModel";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { SubmitHandler, ValidationRule, useForm } from "react-hook-form";
 
 const Form = () => {
-  const router = useRouter()
-  const { saveShippingAddrress, shippingAddress } = useCartService()
+  const router = useRouter();
+  const { saveShippingAddress, shippingAddress } = useCartService();
   const {
     register,
     handleSubmit,
@@ -16,26 +16,26 @@ const Form = () => {
     formState: { errors, isSubmitting },
   } = useForm<ShippingAddress>({
     defaultValues: {
-      fullName: '',
-      address: '',
-      city: '',
-      postalCode: '',
-      country: '',
+      fullName: "",
+      address: "",
+      city: "",
+      postalCode: "",
+      country: "",
     },
-  })
+  });
 
   useEffect(() => {
-    setValue('fullName', shippingAddress.fullName)
-    setValue('address', shippingAddress.address)
-    setValue('city', shippingAddress.city)
-    setValue('postalCode', shippingAddress.postalCode)
-    setValue('country', shippingAddress.country)
-  }, [setValue, shippingAddress])
+    setValue("fullName", shippingAddress.fullName);
+    setValue("address", shippingAddress.address);
+    setValue("city", shippingAddress.city);
+    setValue("postalCode", shippingAddress.postalCode);
+    setValue("country", shippingAddress.country);
+  }, [setValue, shippingAddress]);
 
   const formSubmit: SubmitHandler<ShippingAddress> = async (form) => {
-    saveShippingAddrress(form)
-    router.push('/payment')
-  }
+    saveShippingAddress(form);
+    router.push("/payment");
+  };
 
   const FormInput = ({
     id,
@@ -67,7 +67,6 @@ const Form = () => {
     </div>
   );
 
-
   return (
     <div>
       <CheckoutSteps current={1} />
@@ -96,6 +95,6 @@ const Form = () => {
         </div>
       </div>
     </div>
-  )
-}
-export default Form
+  );
+};
+export default Form;

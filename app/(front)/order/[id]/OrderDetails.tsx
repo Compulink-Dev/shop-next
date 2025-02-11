@@ -1,14 +1,14 @@
 "use client";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
-import OrderItem from "@/lib/models/OrderModel";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fetcher } from "@/lib/services/fetcher";
+import { formatDateTime } from "@/lib/utils";
 
 export default function OrderDetails({
   orderId,
@@ -20,49 +20,57 @@ export default function OrderDetails({
   const [loading, setLoading] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState(null);
   const { data, error } = useSWR(`/api/orders/${orderId}`, fetcher);
+  const { data: session } = useSession();
   const { trigger: deliverOrder, isMutating: isDelivering } = useSWRMutation(
     `/api/orders/${orderId}`,
-    async (url) => {
+    async () => {
+      console.log("Delivering order...");
+
       const res = await fetch(`/api/admin/orders/${orderId}/deliver`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
       const data = await res.json();
-      res.ok
-        ? toast.success("Order delivered successfully")
-        : toast.error(data.message);
+      if (res.ok) {
+        toast.success("Order delivered successfully");
+      } else {
+        toast.error(data.message);
+      }
     }
   );
 
-  const { data: session } = useSession();
+  const [order, setOrder] = useState<any>(data);
 
-  const createPayPalOrder = () => {
-    return fetch(`/api/orders/${orderId}/create-paypal-order`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((response) => response.json())
-      .then((order) => order.id);
-  };
-
+  // Call this function when the user returns from PayNow
   const createPayNowOrder = async () => {
     setLoading(true);
+    console.log("Creating PayNow order...");
     try {
       const response = await fetch(
         `/api/orders/${orderId}/create-paynow-order`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            returnUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/order/${orderId}`, // Redirect after payment
+            resultUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/orders/${orderId}/verify-paynow`, // IPN notification
+          }),
         }
       );
+
       const order = await response.json();
-      console.log("Order :", order);
+      console.log("API Response:", order);
 
       if (order.link) {
         setPaymentUrl(order.link);
+        console.log("Redirecting to PayNow:", order.link);
+        checkOrderStatus();
         window.location.href = order.link; // Redirect to PayNow
       } else {
-        throw new Error("Failed to create PayNow order");
+        console.error(
+          "Failed to create PayNow order. No payment link received."
+        );
+        toast.error("Failed to create PayNow order.");
       }
     } catch (error) {
       console.error("Error creating PayNow order:", error);
@@ -72,7 +80,39 @@ export default function OrderDetails({
     }
   };
 
-  const onApprovePayPalOrder = (data: any) => {
+  const checkOrderStatus = async () => {
+    try {
+      console.log("Checking order payment status...");
+      const response = await fetch(`/api/orders/${orderId}/verify-paynow`, {
+        method: "POST",
+      });
+
+      const result = await response.json();
+      console.log("Verify API Response:", result);
+
+      if (result.isPaid) {
+        toast.success("Payment successful!");
+      } else {
+        toast.error("Payment not completed yet.");
+      }
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+      toast.error("Failed to verify payment.");
+    }
+  };
+
+  console.log("data", data);
+
+  const createPayPalOrder = async () => {
+    return fetch(`/api/orders/${orderId}/create-paypal-order`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((response) => response.json())
+      .then((order) => order.id);
+  };
+
+  const onApprovePayPalOrder = async (data: any) => {
     return fetch(`/api/orders/${orderId}/capture-paypal-order`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -87,6 +127,8 @@ export default function OrderDetails({
   if (error) return error.message;
   if (!data) return "Loading...";
 
+  console.log("data", data);
+
   const {
     paymentMethod,
     shippingAddress,
@@ -99,6 +141,7 @@ export default function OrderDetails({
     deliveredAt,
     isPaid,
     paidAt,
+    createdAt,
   } = data;
 
   return (
@@ -129,7 +172,9 @@ export default function OrderDetails({
               <h2 className="card-title">Payment Method</h2>
               <p>{paymentMethod}</p>
               {isPaid ? (
-                <div className="text-success">Paid at {paidAt}</div>
+                <div className="text-success">
+                  Paid at {formatDateTime(createdAt).dateTime}
+                </div>
               ) : (
                 <div className="text-error">Not Paid</div>
               )}

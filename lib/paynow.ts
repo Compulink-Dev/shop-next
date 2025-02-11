@@ -13,8 +13,8 @@ export const paynow = {
     );
 
     // Set PayNow URLs for redirection and results
-    paynow.resultUrl = "http://example.com/gateways/paynow/update";
-    paynow.returnUrl = `http://example.com/return?gateway=paynow&merchantReference=${orderId}`;
+    paynow.resultUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/orders/${orderId}/verify-paynow`;
+    paynow.returnUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/order/${orderId}`;
 
     const payment = paynow.createPayment(`Invoice_${orderId}`);
 
@@ -47,20 +47,34 @@ export const paynow = {
 
     try {
       // Poll the payment result
-      const status = await paynow.pollTransaction(pollUrl);
+      let paymentStatus;
+      let retryCount = 0;
+      const maxRetries = 5;
 
-      if (status.paid()) {
-        return {
-          success: true,
-          id: status.transactionId, // Extracting transaction ID
-          update_time: status.paidAt, // Use correct timestamp field
-          email_address: status.payer ? status.payer.email : null, // Ensure payer object exists
-          paidAt: status.paidAt,
-          paymentDetails: status,
-        };
-      } else {
-        throw new Error("Payment not completed");
+      // Retry mechanism for polling
+      while (retryCount < maxRetries) {
+        paymentStatus = await paynow.pollTransaction(pollUrl);
+        console.log("Payment status received:", paymentStatus);
+
+        if (paymentStatus.status === "paid") {
+          break;
+        }
+        retryCount++;
+        // Wait before retrying (e.g., 5 seconds)
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       }
+
+      if (paymentStatus.status !== "paid") {
+        console.error("Payment not completed after retries");
+        return { success: false, message: "Payment not completed" };
+      }
+
+      return {
+        success: true,
+        id: paymentStatus.transactionId, // Extracting transaction ID
+        paidAt: paymentStatus.paidAt,
+        paymentDetails: paymentStatus,
+      };
     } catch (error) {
       console.error("Error in capturePayNowOrder:", error);
       throw error;

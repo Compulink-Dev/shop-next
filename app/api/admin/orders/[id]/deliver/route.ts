@@ -25,6 +25,7 @@ export async function PUT(
             status: 400,
           }
         );
+      order.isPaid = true;
       order.isDelivered = true;
       order.deliveredAt = Date.now();
       const updatedOrder = await order.save();
