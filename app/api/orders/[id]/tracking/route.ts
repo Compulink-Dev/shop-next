@@ -1,7 +1,5 @@
 import dbConnect from "@/lib/dbConnect";
 import OrderModel from "@/lib/models/OrderModel";
-import ProductModel from "@/lib/models/ProductModel"; // Ensure import
-import { NextResponse } from "next/server";
 
 const validStatuses = [
   "Order Received",
@@ -18,21 +16,37 @@ export async function GET(
 ) {
   await dbConnect();
 
+  const { id } = params;
+
   try {
-    const order = await OrderModel.findById(params.id).populate("product");
+    // Find the order by ID and populate tracking data
+    const order = await OrderModel.findById(id)
+      .populate({
+        path: "tracking.product",
+        select: "name slug",
+      })
+      .populate({
+        path: "user",
+        select: "name email", // Adjust based on your needs
+      });
 
     if (!order) {
-      return NextResponse.json(
-        { message: "Tracking data not found" },
-        { status: 404 }
-      );
+      return new Response(JSON.stringify({ message: "Order not found" }), {
+        status: 404,
+      });
     }
 
-    return NextResponse.json(order);
+    // Return tracking data
+    return new Response(JSON.stringify({ tracking: order.tracking }), {
+      status: 200,
+    });
   } catch (error) {
     console.error("Error fetching tracking data:", error);
-    return NextResponse.json(
-      { message: "Error fetching tracking data", error },
+    return new Response(
+      JSON.stringify({
+        message:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      }),
       { status: 500 }
     );
   }
