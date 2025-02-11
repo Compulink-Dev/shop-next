@@ -6,8 +6,8 @@ import { paynow } from "@/lib/paynow";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-const MAX_RETRIES = 3; // Reduce retries to 3
-const RETRY_DELAY = 3000; // Reduce delay to 3 seconds
+const MAX_RETRIES = 10; // Reduce retries to 10
+const RETRY_DELAY = 10000; // Reduce delay to 10 seconds
 
 async function checkPaymentStatusWithRetry(
   pollUrl: string,
