@@ -1,15 +1,16 @@
 import dbConnect from "@/lib/dbConnect";
 import OrderModel from "@/lib/models/OrderModel";
-import { NextRequest, NextResponse } from "next/server";
+import ProductModel from "@/lib/models/ProductModel"; // Ensure this is imported
+import { NextResponse } from "next/server";
 
-// GET Order by ID
 export async function GET(
-  req: NextRequest,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   await dbConnect();
+
   try {
-    const order = await OrderModel.findById(params.id);
+    const order = await OrderModel.findById(params.id).populate("product"); // Ensure population of product
 
     if (!order) {
       return NextResponse.json({ message: "Order not found" }, { status: 404 });
@@ -25,30 +26,19 @@ export async function GET(
   }
 }
 
-// PATCH - Update Order Payment Status
 export async function PATCH(
-  req: NextRequest,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
     await dbConnect();
-    const { id } = params;
-    const { isPaid } = await req.json();
+    const { isPaid } = await req.json(); // Assuming payment update sends { isPaid: true }
 
-    // Validate isPaid input
-    if (typeof isPaid !== "boolean") {
-      return NextResponse.json(
-        { message: "Invalid value for isPaid. Must be a boolean." },
-        { status: 400 }
-      );
-    }
-
-    // Update order
     const updatedOrder = await OrderModel.findByIdAndUpdate(
-      id,
+      params.id,
       { isPaid },
       { new: true }
-    );
+    ).populate("product"); // Populate product for the updated order
 
     if (!updatedOrder) {
       return NextResponse.json({ message: "Order not found" }, { status: 404 });
