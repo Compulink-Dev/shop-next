@@ -7,7 +7,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   await dbConnect();
-  const order = await OrderModel.findById(params.id);
+  const order = await OrderModel.findById(params.id)
+    .populate("tracking.product", "name slug")
+    .populate("user", "name email");
+
   return NextResponse.json(order);
 }
 
