@@ -21,9 +21,8 @@ export async function GET(
 
   try {
     // Find the order by ID and populate tracking data
-    const order = await OrderModel.findById(id)
-      .populate("tracking.product", "name slug")
-      .populate("user", "name email");
+    // Fetch the order and populate the product information if needed
+    const order = await OrderModel.findById(params.id).populate("product");
 
     if (!order) {
       return new Response(JSON.stringify({ message: "Order not found" }), {
