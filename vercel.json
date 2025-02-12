@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/orders/*": {
-      "timeout": 60
-    }
-  }
-}
