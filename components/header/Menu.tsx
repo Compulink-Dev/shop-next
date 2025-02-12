@@ -84,7 +84,8 @@ const Menu = () => {
               <div className="dropdown dropdown-bottom dropdown-end">
                 <label
                   tabIndex={0}
-                  className="btn btn-ghost rounded-btn capitalize"
+                  className="btn btn-ghost rounded-btn"
+                  style={{ textTransform: "capitalize" }}
                 >
                   {session.user.name}
                 </label>
