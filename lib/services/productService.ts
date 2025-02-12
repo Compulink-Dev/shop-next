@@ -1,7 +1,6 @@
 import { cache } from "react";
 import dbConnect from "@/lib/dbConnect";
 import ProductModel from "@/lib/models/ProductModel";
-import { Product } from "../types";
 
 export const revalidate = 3600;
 
@@ -11,13 +10,13 @@ const getLatest = cache(async () => {
     .sort({ _id: -1 })
     .limit(6)
     .lean();
-  return products as Product[];
+  return products as any[];
 });
 
 const getAll = cache(async () => {
   await dbConnect();
   const products = await ProductModel.find({}).lean();
-  return products as Product[];
+  return products as any[];
 });
 
 const getFeatured = cache(async () => {
@@ -25,19 +24,19 @@ const getFeatured = cache(async () => {
   const products = await ProductModel.find({ isFeatured: true })
     .limit(3)
     .lean();
-  return products as Product[];
+  return products as any[];
 });
 
 const getProductsByCategory = cache(async (category: string) => {
   await dbConnect();
   const products = await ProductModel.find({ category }).lean();
-  return products as Product[];
+  return products as any[];
 });
 
 const getBySlug = cache(async (slug: string) => {
   await dbConnect();
   const product = await ProductModel.findOne({ slug }).lean();
-  return product as Product;
+  return product as any;
 });
 
 const PAGE_SIZE = 3;
@@ -118,7 +117,7 @@ const getByQuery = cache(
     });
 
     return {
-      products: products as Product[],
+      products: products as any[],
       countProducts,
       page,
       pages: Math.ceil(countProducts / PAGE_SIZE),

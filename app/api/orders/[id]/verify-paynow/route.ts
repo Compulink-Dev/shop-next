@@ -1,5 +1,3 @@
-// app/api/orders/[id]/verify-paynow/route.ts
-//@ts-nocheck
 import { options } from "@/app/api/auth/[...nextauth]/options";
 import dbConnect from "@/lib/dbConnect";
 import OrderModel from "@/lib/models/OrderModel";
@@ -10,14 +8,6 @@ import { NextResponse } from "next/server";
 const MAX_RETRIES = 5; // Reduce retries to 5
 const RETRY_DELAY = 5000; // Reduce delay to 5 seconds
 const PAYNOW_TIMEOUT = 10000; // 10s fetch timeout
-
-export const config = {
-  api: {
-    responseLimit: false,
-    bodyParser: { sizeLimit: "1mb" },
-    externalResolver: true, // Prevents Vercel timeouts
-  },
-};
 
 // Retry logic for checking PayNow payment status
 async function checkPaymentStatusWithRetry(
@@ -131,7 +121,7 @@ export async function POST(
   } catch (err) {
     console.error("Error verifying PayNow payment:", err);
     return NextResponse.json(
-      { message: "Internal server error", error: err.message },
+      { message: "Internal server error", err },
       { status: 500 }
     );
   }
