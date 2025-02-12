@@ -6,7 +6,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { fetcher } from "@/lib/services/fetcher";
 import { formatDateTime } from "@/lib/utils";
 
@@ -287,7 +287,7 @@ export default function OrderDetails({
                   </li>
                 )}
 
-                {session?.user.isAdmin && (
+                {session?.user.isAdmin && !isDelivered && (
                   <li>
                     <button
                       className="btn w-full my-2"
