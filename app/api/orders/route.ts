@@ -34,12 +34,21 @@ export async function POST(req: any) {
       },
       "price"
     );
-    const dbOrderItems = payload.items.map((x: { _id: string }) => ({
-      ...x,
-      product: x._id,
-      price: dbProductPrices.find((x) => x._id === x._id).price,
-      _id: undefined,
-    }));
+    const dbOrderItems = payload.items.map((item: { _id: string }) => {
+      const product = dbProductPrices.find(
+        (prod) => prod._id.toString() === item._id.toString()
+      );
+
+      if (product) {
+        return {
+          ...item,
+          product: item._id,
+          price: product.price, // Correctly assigning the price here
+          _id: undefined,
+        };
+      }
+      // Handle the case where product is not found, if necessary
+    });
 
     const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
       calcPrices(dbOrderItems);

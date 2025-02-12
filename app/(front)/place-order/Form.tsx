@@ -41,7 +41,7 @@ const Form = () => {
       });
       const data = await res.json();
 
-      console.log("Order Data", data);
+      console.log("Order Data Passed : ", data);
 
       if (res.ok) {
         clear();
@@ -68,6 +68,8 @@ const Form = () => {
   }, []);
 
   if (!mounted) return <></>;
+
+  console.log("Order Data Received : ", items);
 
   return (
     <div>

@@ -39,8 +39,6 @@ export default function OrderDetails({
     }
   );
 
-  const [order, setOrder] = useState<any>(data);
-
   // Call this function when the user returns from PayNow
   const createPayNowOrder = async () => {
     setLoading(true);
