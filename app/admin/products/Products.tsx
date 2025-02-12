@@ -1,6 +1,5 @@
 "use client";
 import * as XLSX from "xlsx";
-import { Product } from "@/lib/models/ProductModel";
 import { formatId } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Product } from "@/lib/types";
 
 interface UploadedProduct {
   part: string;

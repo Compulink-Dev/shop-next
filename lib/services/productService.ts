@@ -1,12 +1,16 @@
-import { cache } from 'react';
-import dbConnect from '@/lib/dbConnect';
-import ProductModel, { Product } from '@/lib/models/ProductModel';
+import { cache } from "react";
+import dbConnect from "@/lib/dbConnect";
+import ProductModel from "@/lib/models/ProductModel";
+import { Product } from "../types";
 
 export const revalidate = 3600;
 
 const getLatest = cache(async () => {
   await dbConnect();
-  const products = await ProductModel.find({}).sort({ _id: -1 }).limit(6).lean();
+  const products = await ProductModel.find({})
+    .sort({ _id: -1 })
+    .limit(6)
+    .lean();
   return products as Product[];
 });
 
@@ -18,7 +22,9 @@ const getAll = cache(async () => {
 
 const getFeatured = cache(async () => {
   await dbConnect();
-  const products = await ProductModel.find({ isFeatured: true }).limit(3).lean();
+  const products = await ProductModel.find({ isFeatured: true })
+    .limit(3)
+    .lean();
   return products as Product[];
 });
 
@@ -43,7 +49,7 @@ const getByQuery = cache(
     sort,
     price,
     rating,
-    page = '1',
+    page = "1",
   }: {
     q: string;
     category: string;
@@ -55,40 +61,40 @@ const getByQuery = cache(
     await dbConnect();
 
     const queryFilter =
-      q && q !== 'all'
+      q && q !== "all"
         ? {
-          name: {
-            $regex: q,
-            $options: 'i',
-          },
-        }
+            name: {
+              $regex: q,
+              $options: "i",
+            },
+          }
         : {};
-    const categoryFilter = category && category !== 'all' ? { category } : {};
+    const categoryFilter = category && category !== "all" ? { category } : {};
     const ratingFilter =
-      rating && rating !== 'all'
+      rating && rating !== "all"
         ? {
-          rating: {
-            $gte: Number(rating),
-          },
-        }
+            rating: {
+              $gte: Number(rating),
+            },
+          }
         : {};
     const priceFilter =
-      price && price !== 'all'
+      price && price !== "all"
         ? {
-          price: {
-            $gte: Number(price.split('-')[0]),
-            $lte: Number(price.split('-')[1]),
-          },
-        }
+            price: {
+              $gte: Number(price.split("-")[0]),
+              $lte: Number(price.split("-")[1]),
+            },
+          }
         : {};
     const order: Record<string, 1 | -1> =
-      sort === 'lowest'
+      sort === "lowest"
         ? { price: 1 }
-        : sort === 'highest'
-          ? { price: -1 }
-          : sort === 'toprated'
-            ? { rating: -1 }
-            : { _id: -1 };
+        : sort === "highest"
+        ? { price: -1 }
+        : sort === "toprated"
+        ? { rating: -1 }
+        : { _id: -1 };
 
     const products = await ProductModel.find(
       {
@@ -97,7 +103,7 @@ const getByQuery = cache(
         ...priceFilter,
         ...ratingFilter,
       },
-      '-reviews'
+      "-reviews"
     )
       .sort(order)
       .skip(PAGE_SIZE * (Number(page) - 1))
@@ -122,7 +128,7 @@ const getByQuery = cache(
 
 const getCategories = cache(async () => {
   await dbConnect();
-  const categories = await ProductModel.find().distinct('category');
+  const categories = await ProductModel.find().distinct("category");
   return categories;
 });
 

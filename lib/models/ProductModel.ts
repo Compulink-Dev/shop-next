@@ -1,6 +1,6 @@
 // lib/models/ProductModel.ts
 
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 // Define the schema for MongoDB
 const productSchema = new mongoose.Schema(
@@ -22,34 +22,16 @@ const productSchema = new mongoose.Schema(
       {
         status: { type: String, required: true },
         timestamp: { type: Date, default: Date.now },
-        message: { type: String, required: false },  // Optional message field
-      }
-    ]
+        message: { type: String, required: false }, // Optional message field
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
 
-const ProductModel = mongoose.models.Product || mongoose.model('Product', productSchema);
+const ProductModel =
+  mongoose.models.Product || mongoose.model("Product", productSchema);
 
 export default ProductModel;
-
-// Updated Product type
-export type Product = {
-  _id: string;  // Ensure _id is always treated as a string
-  part: string;
-  name: string;
-  slug: string;
-  image?: string;
-  banner?: string; // Optional banner field
-  price: number;
-  brand: string;
-  description: string;
-  category: string;
-  rating: number;
-  numReviews: number;
-  countInStock: number;
-  colors?: string[]; // Optional colors array
-  sizes?: string[];  // Optional sizes array
-};

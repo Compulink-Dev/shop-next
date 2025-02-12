@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import ProductModel from "@/lib/models/ProductModel";
 
 const validStatuses = [
   "Order Received",
@@ -94,22 +95,3 @@ orderSchema.methods.markAsPaid = function (paymentResult: any) {
 const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
 
 export default Order;
-
-export interface ShippingAddress {
-  fullName: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-}
-
-export interface OrderItem {
-  product: string; // Assuming ObjectId will be stored as a string
-  name: string;
-  slug: string;
-  qty: number;
-  image: string;
-  price: number;
-  color?: string;
-  size?: string;
-}

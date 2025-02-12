@@ -1,10 +1,11 @@
 import { getServerSession } from "next-auth";
 import dbConnect from "@/lib/dbConnect";
-import OrderModel, { OrderItem } from "@/lib/models/OrderModel";
+import OrderModel from "@/lib/models/OrderModel";
 import ProductModel from "@/lib/models/ProductModel";
 import { round2 } from "@/lib/utils";
 import { NextResponse } from "next/server";
 import { options } from "../../auth/[...nextauth]/options";
+import { OrderItem } from "@/lib/types";
 
 const calcPrices = (orderItems: OrderItem[]) => {
   const itemsPrice = round2(

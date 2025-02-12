@@ -1,21 +1,21 @@
-'use client'
-import useCartService from '@/lib/hooks/useCartStore'
-import { OrderItem } from '@/lib/models/OrderModel'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+"use client";
+import useCartService from "@/lib/hooks/useCartStore";
+import { OrderItem } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function AddToCart({ item }: { item: OrderItem }) {
-  const router = useRouter()
-  const { items, increase, decrease } = useCartService()
-  const [existItem, setExistItem] = useState<OrderItem | undefined>()
+  const router = useRouter();
+  const { items, increase, decrease } = useCartService();
+  const [existItem, setExistItem] = useState<OrderItem | undefined>();
 
   useEffect(() => {
-    setExistItem(items.find((x) => x.slug === item.slug))
-  }, [item, items])
+    setExistItem(items.find((x) => x.slug === item.slug));
+  }, [item, items]);
 
   const addToCartHandler = () => {
-    increase(item)
-  }
+    increase(item);
+  };
   return existItem ? (
     <div>
       <button className="btn" type="button" onClick={() => decrease(existItem)}>
@@ -34,5 +34,5 @@ export default function AddToCart({ item }: { item: OrderItem }) {
     >
       Add to cart
     </button>
-  )
+  );
 }

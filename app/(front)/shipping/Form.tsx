@@ -1,7 +1,7 @@
 "use client";
 import CheckoutSteps from "@/components/CheckoutSteps";
 import useCartService from "@/lib/hooks/useCartStore";
-import { ShippingAddress } from "@/lib/models/OrderModel";
+import { ShippingAddress } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { SubmitHandler, ValidationRule, useForm } from "react-hook-form";

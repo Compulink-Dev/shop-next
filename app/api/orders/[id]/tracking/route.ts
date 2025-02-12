@@ -1,5 +1,6 @@
 import dbConnect from "@/lib/dbConnect";
 import OrderModel from "@/lib/models/OrderModel";
+import ProductModel from "@/lib/models/ProductModel";
 
 const validStatuses = [
   "Order Received",
@@ -21,14 +22,8 @@ export async function GET(
   try {
     // Find the order by ID and populate tracking data
     const order = await OrderModel.findById(id)
-      .populate({
-        path: "tracking.product",
-        select: "name slug",
-      })
-      .populate({
-        path: "user",
-        select: "name email", // Adjust based on your needs
-      });
+      .populate("tracking.product", "name slug")
+      .populate("user", "name email");
 
     if (!order) {
       return new Response(JSON.stringify({ message: "Order not found" }), {
@@ -60,23 +55,16 @@ export async function POST(
 
   const { id } = params;
 
+  const { status, message } = await req.json();
+
+  // Validate input
+  if (!status || !validStatuses.includes(status)) {
+    return new Response(JSON.stringify({ message: "Invalid status" }), {
+      status: 400,
+    });
+  }
+
   try {
-    const { status, message } = await req.json();
-
-    // Validate input
-    if (!status || status.trim() === "") {
-      return new Response(JSON.stringify({ message: "Status is required" }), {
-        status: 400,
-      });
-    }
-
-    // Validate status value
-    if (!validStatuses.includes(status)) {
-      return new Response(JSON.stringify({ message: "Invalid status value" }), {
-        status: 400,
-      });
-    }
-
     // Find the order by ID
     const order = await OrderModel.findById(id);
 

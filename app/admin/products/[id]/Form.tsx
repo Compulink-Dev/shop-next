@@ -5,11 +5,11 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 import { ValidationRule, useForm } from "react-hook-form";
 import { useEffect } from "react";
-import { Product } from "@/lib/models/ProductModel";
 import { formatId } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { fetcher } from "@/lib/services/fetcher";
 import AdminLoading from "@/components/admin/AdminLoading";
+import { Product } from "@/lib/types";
 
 export default function ProductEditForm({ productId }: { productId: string }) {
   const {
