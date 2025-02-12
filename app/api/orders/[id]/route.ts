@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   await dbConnect();
-  const order = await OrderModel.findById(params.id).populate("product"); // Make sure 'product' is referenced correctly in the order schema
+  const order = await OrderModel.findById(params.id);
   return NextResponse.json(order);
 }
 
