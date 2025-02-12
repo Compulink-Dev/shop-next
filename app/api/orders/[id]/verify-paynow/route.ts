@@ -54,6 +54,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(options);
+  console.log("Received payment status for order:", params.id);
   if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
