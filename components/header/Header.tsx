@@ -1,8 +1,8 @@
-import Link from 'next/link'
-import React from 'react'
-import Menu from './Menu'
-import { SearchBox } from './SearchBox'
-import Image from 'next/image'
+import Link from "next/link";
+import React from "react";
+import Menu from "./Menu";
+import { SearchBox } from "./SearchBox";
+import Image from "next/image";
 
 const Header = () => {
   return (
@@ -26,7 +26,7 @@ const Header = () => {
               </svg>
             </label>
             <Link href="/" className="btn btn-ghost text-lg">
-              <Image src={'/logo.png'} alt='' width={150} height={150} />
+              <Image src={"/logo.png"} alt="" width={80} height={80} />
             </Link>
           </div>
 
@@ -37,7 +37,7 @@ const Header = () => {
         </div>
       </nav>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

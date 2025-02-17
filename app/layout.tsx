@@ -34,7 +34,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                 <Header />
                 {children}
                 <footer className="footer footer-center p-4 bg-base-300 text-base-content">
-                  <p>Copyright © 2025 - All right reserved by Compulink</p>
+                  <p>Copyright © 2025 - All right reserved by TechTrain</p>
                 </footer>
               </div>
             </div>
